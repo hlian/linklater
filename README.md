@@ -12,10 +12,10 @@ Uh, do you want to be friends? Well let's talk about it later, because right now
 
 ## Show me an example!
 
-Here's a `_jpgto` bot! If you run this program and then tell Slack
+Here's a `/jpgto` bot! If you run this program and then tell Slack
 about your server (incoming hook and custom slash command) and then
-type `_jpgto diplomatico` in one of your channels, you'll get the
-image from `http:__diplomatico.jpg.to`. How, you say? _Screen scraping_.
+type `/jpgto diplomatico` in one of your channels, you'll get the
+image from [http://diplomatico.jpg.to](http://diplomatico.jpg.to). How, you say? _Screen scraping_.
 
 ```haskell
 
