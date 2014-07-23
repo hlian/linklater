@@ -8,6 +8,13 @@ write silly Slack bots in Haskell as a way to learn Haskell?
 
 Uh, do you want to be friends? Well let's talk about it later, because right now I have an example for you.
 
+But you'll have to grab me first:
+
+* `cabal sandbox init`
+* `cabal install linklater`
+
+If you don't have Haskell, it's quite easy: [Windows](http://www.haskell.org/platform/), [Mac](http://ghcformacosx.github.io/), and [Linux](https://gist.githubusercontent.com/hlian/b5a975252997cb3e0020/raw/e4ecab3042225d321a88ee74e804c38ead38ed52/gistfile1.txt).
+
 ## Show me an example!
 
 Here's a `/jpgto` bot. If you run this program and then tell Slack
