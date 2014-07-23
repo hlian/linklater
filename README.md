@@ -18,6 +18,8 @@ type `/jpgto diplomatico` in one of your channels, you'll get the
 image from [http://diplomatico.jpg.to](http://diplomatico.jpg.to). How, you say? _Screen scraping_.
 
 ```haskell
+import Network.Linklater (say, slash,
+                          Command(..), Config(..), Icon(..), Message(..), User(..))
 
 urlParser :: Parser B.ByteString
 urlParser = p

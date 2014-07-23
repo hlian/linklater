@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name: linklater
-version: 1.0.0.0
+version: 1.0.0.1
 synopsis: Write bots for your Slack account, and then go to sleep (because it's so easy and late at night)
 homepage: https://github.com/hlian/linklater
 license: BSD3
@@ -20,7 +20,7 @@ description:
   A mistake?
 
 flag developer
-  default: True
+  default: False
   manual: True
 
 library
