@@ -33,7 +33,7 @@ library
     Network.Linklater
 
   build-depends:
-    base >=4.7 && <4.8,
+    base >=4.6 && <4.8,
     wreq >=0.1.0.1 && <0.2,
     lens >=4.3 && <4.4,
     aeson >=0.7.0.6 && <0.8,
