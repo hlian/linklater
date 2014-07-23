@@ -51,7 +51,7 @@ main = do
   let port = 80
   putStrLn (F.format "+ Listening on port {}" [port])
   run port (slash jpgto)
-   return ()
+  return ()
 ```
 
 For the full example (since this one is missing a ton of imports), see
