@@ -1,18 +1,16 @@
 ## Who let you in here?
 
-Relax! I'm here to make your life easier. Has your company ever switched to using Slack, and then you wanted to write silly Slack bots in Haskell as a way to learn Haskell?
+Relax! I'm here to make your life easier. Has your company ever
+switched to using [Slack](https://slack.com), and then you wanted to
+write silly Slack bots in Haskell as a way to learn Haskell?
 
-Really?
+<sup>Really?<sup>Wow<sup>That was a pretty specific question.</sup></sup>
 
-Wow.
-
-(That was a pretty specific question.)
-
-Uh, do you want to be friends? Well let's talk about it later, because right now I have something that's going to blow your mind!
+Uh, do you want to be friends? Well let's talk about it later, because right now I have an example for you.
 
 ## Show me an example!
 
-Here's a `/jpgto` bot! If you run this program and then tell Slack
+Here's a `/jpgto` bot. If you run this program and then tell Slack
 about your server (incoming hook and custom slash command) and then
 type `/jpgto diplomatico` in one of your channels, you'll get the
 image from [http://diplomatico.jpg.to](http://diplomatico.jpg.to). How, you say? _Screen scraping_.
@@ -63,7 +61,7 @@ Now! `/jpgto corgi`:
 
 ![jpgtobot in action](corgi.jpg)
 
-So easy! Much fast.
+So easy. Much fast.
 
 ## Features
 
