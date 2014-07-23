@@ -59,6 +59,12 @@ main = do
 For the full example (since this one is missing a ton of imports), see
 the `examples/` directory on GitHub.
 
+Now! `/jpgto corgi`:
+
+![jpgtobot in action](corgi.jpg)
+
+So easy! Much fast.
+
 ## Features
 
 * Uses `Text` everywhere so you can send your slash commands crazy Unicode characters all day long.
