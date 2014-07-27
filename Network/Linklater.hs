@@ -108,18 +108,21 @@ data Message = Message {
   -- Alert: if it's a private IM, it'll look like it came from
   -- slackbot (as of writing).
   _messageChannel :: Channel,
+  -- | If 'True', full parsing will kick in.
+  _messageParsed :: Bool,
   -- | Your big ideas go here. This will be parsed in full
-  -- (parse=full) in the Slack API sense.
+  -- (parse=full) in the Slack API sense if @_messageUnparsed@ is 'True'.
   _messageText :: Text
   } deriving (Eq, Ord, Show)
 
 instance ToJSON Message where
-  toJSON (Message (EmojiIcon emoji) channel text) =
+  toJSON (Message (EmojiIcon emoji) channel unparsed text) =
     object [ "channel" .= stringOfChannel channel
            , "icon_emoji" .= TL.concat [":", emoji, ":"]
-           , "parse" .= String "full"
+           , "parse" .= String (if unparsed then "full" else "poop")
            , "username" .= String "jpgtobot"
            , "text" .= text
+           , "unfurl_links" .= True
            ]
     where
       stringOfChannel (GroupChannel c) = TL.concat ["#", c]
