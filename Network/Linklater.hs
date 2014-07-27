@@ -10,8 +10,11 @@
 --
 -- Here's a @/jpgto@ bot! If you run this program and then tell Slack
 -- about your server (incoming hook and custom slash command) and then
--- type @/jpgto diplomatico@ in one of your channels, you'll get the
--- image from @http://diplomatico.jpg.to@. How, you say? /Screen scraping/.
+-- type @/jpgto corgi@ in one of your channels, you'll get the
+-- image from @http://corgi.jpg.to@. How, you say? /Screen scraping/.
+--
+-- > -- Remaining imports left as an exercise to the reader.
+-- > import Network.Linklater (say, slashSimple, Channel(..), Command(..), User(..), Config(..), Message(..), Icon(..))
 --
 -- > findUrl :: Text -> Maybe Text
 -- > findUrl = fmap fromStrict . maybeResult . parse (manyTill (notChar '\n') (string "src=\"") *> takeTill (== '"'))
@@ -33,6 +36,10 @@
 --
 -- > main :: IO ()
 -- > main = let port = 3000 in putStrLn ("+ Listening on port " <> show port) >> run port (slashSimple jpgto)
+--
+-- Et voila:
+--
+-- <<corgi.jpg>>
 --
 -- For the full example (since this one is missing a ton of imports),
 -- see the @examples/@ directory on GitHub.

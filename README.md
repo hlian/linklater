@@ -23,29 +23,29 @@ type `/jpgto diplomatico` in one of your channels, you'll get the
 image from [http://diplomatico.jpg.to](http://diplomatico.jpg.to). How, you say? _Screen scraping_.
 
 ```haskell
-import Network.Linklater (say, slash, Channel(..), Command(..), User(..), Config(..), Message(..), Icon(..))
+-- Remaining imports left as an exercise to the reader.
+import Network.Linklater (say, slashSimple, Channel(..), Command(..), User(..), Config(..), Message(..), Icon(..))
 
 findUrl :: Text -> Maybe Text
 findUrl = fmap fromStrict . maybeResult . parse (manyTill (notChar '\n') (string "src=\"") *> takeTill (== '"'))
 
 messageOf :: User -> Channel -> Text -> Text -> Message
-messageOf (User u) c search = Message (EmojiIcon "gift") c . mappend (mconcat ["@", u, `", search, "`: "])
+messageOf (User u) c search = Message (EmojiIcon "gift") c . mappend (mconcat ["@", u, " Hello, wanderer. I found you this for \"", search, "\": "])
 
-jpgto :: Maybe Command -> Application
-jpgto (Just (Command user channel (Just text))) _ respond = do
-  message <- get url >>= (return . fmap (messageOf user channel text) . findUrl . decodeUtf8 . flip (^.) responseBody)
+jpgto :: Maybe Command -> IO Text
+jpgto (Just (Command user channel (Just text))) = do
+  message <- (fmap (messageOf user channel text) . findUrl . decodeUtf8 . flip (^.) responseBody) <$> get url
   case (debug, message) of
-    (True, _) -> putStrLn ("+ Pretending to post " <> show message) >> respondWith ""
-    (False, Just m) -> config' >>= say m >> respondWith ""
-    (False, Nothing) -> respondWith "Something went wrong!"
-  where ourHeaders = [("Content-Type", "text/plain")]
-        respondWith = respond . responseLBS status200 ourHeaders
-        config' = (Config "trello.slack.com" . pack . filter (/= '\n')) <$> readFile "token"
+    (True, _) -> putStrLn ("+ Pretending to post " <> show message) >> return ""
+    (False, Just m) -> config' >>= say m >> return ""
+    (False, Nothing) -> return "Something went wrong!"
+  where config' = (Config "trello.slack.com" . pack . filter (/= '\n')) <$> readFile "token"
         url = "http://" <> (unpack . intercalate "." . words $ text) <> ".jpg.to/"
-        debug = False
+        debug = True
+jpgto Nothing = return "Type more! (Did you know? jpgtobot is only 26 lines of Haskell. <https://github.com/hlian/jpgtobot/blob/master/Main.hs>)"
 
 main :: IO ()
-main = let port = 3000 in putStrLn ("+ Listening on port " <> show port) >> run port (slash jpgto)
+main = let port = 3000 in putStrLn ("+ Listening on port " <> show port) >> run port (slashSimple jpgto)
 ```
 
 For the full example (since this one is missing a ton of imports), see
