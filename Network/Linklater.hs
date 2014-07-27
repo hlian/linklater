@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, GADTs #-}
 
 -- |
 -- Module: Network.Linklater
@@ -10,34 +10,33 @@
 --
 -- Here's a @/jpgto@ bot! If you run this program and then tell Slack
 -- about your server (incoming hook and custom slash command) and then
--- type @/jpgto corgi@ in one of your channels, you'll get the
--- image from @http://corgi.jpg.to@. How, you say? /Screen scraping/.
+-- type @/jpgto baby corgi@ in one of your channels, you'll get the
+-- image from @http://baby.corgi.jpg.to@. How, you say? /Screen scraping/.
 --
 -- > -- Remaining imports left as an exercise to the reader.
--- > import Network.Linklater (say, slashSimple, Channel(..), Command(..), User(..), Config(..), Message(..), Icon(..))
---
+-- > import Network.Linklater (say, slashSimple, Command(..), Config(..), Message(..), Icon(..), Format(..))
+-- > --
+-- >
 -- > findUrl :: Text -> Maybe Text
 -- > findUrl = fmap fromStrict . maybeResult . parse (manyTill (notChar '\n') (string "src=\"") *> takeTill (== '"'))
---
--- > messageOf :: User -> Channel -> Text -> Text -> Message
--- > messageOf (User u) c search = Message (EmojiIcon "gift") c . mappend (mconcat ["@", u, " Hello, wanderer. I found you this for \"", search, "\": "])
---
+-- >
 -- > jpgto :: Maybe Command -> IO Text
 -- > jpgto (Just (Command user channel (Just text))) = do
--- >   message <- (fmap (messageOf user channel text) . findUrl . decodeUtf8 . flip (^.) responseBody) <$> get url
+-- >   message <- (fmap messageOf . findUrl . decodeUtf8 . flip (^.) responseBody) <$> get ("http://" <> (unpack subdomain) <> ".jpg.to/")
 -- >   case (debug, message) of
--- >     (True, _) -> putStrLn ("+ Pretending to post " <> show message) >> return ""
+-- >     (True, _) -> putStrLn ("+ Pretending to post " <> (unpack . decodeUtf8 . encode) message) >> return ""
 -- >     (False, Just m) -> config' >>= say m >> return ""
 -- >     (False, Nothing) -> return "Something went wrong!"
--- >   where config' = (Config "trello.slack.com" . pack . filter (/= '\n')) <$> readFile "token"
--- >         url = "http://" <> (unpack . intercalate "." . words $ text) <> ".jpg.to/"
+-- >   where config' = (Config "trello.slack.com" . filter (/= '\n') . pack) <$> readFile "token"
+-- >         subdomain = (intercalate "." . fmap (filter isLetter . filter isAscii) . words) text
+-- >         messageOf url = FormattedMessage (EmojiIcon "gift") "jpgtobot" channel [FormatAt user, FormatLink url (subdomain <> ".jpg.to>"), FormatString "no way!: &<>"]
 -- >         debug = True
--- > jpgto Nothing = return "Type more! (Did you know? jpgtobot is only 26 lines of Haskell. <https://github.com/hlian/jpgtobot/blob/master/Main.hs>)"
---
+-- > jpgto _ = return "Type more! (Did you know? jpgtobot is only 26 lines of Haskell. <https://github.com/hlian/jpgtobot/blob/master/Main.hs>)"
+-- >
 -- > main :: IO ()
 -- > main = let port = 3000 in putStrLn ("+ Listening on port " <> show port) >> run port (slashSimple jpgto)
 --
--- Et voila:
+-- One @/jpgto baby corgi@, et voila.
 --
 -- <<corgi.jpg>>
 --
@@ -57,12 +56,14 @@ module Network.Linklater
          Config(..),
          Command(..),
          Icon(..),
+         Format(..)
        ) where
 
 import Control.Applicative ((<$>))
 import Data.Aeson
-import Data.ByteString.Lazy as BSL
+import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Map as M
+import Data.Monoid
 import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
@@ -98,35 +99,52 @@ newtype Icon =
   -- | For example, ":stars2:".
   EmojiIcon Text deriving (Eq, Ord, Show)
 
+-- | A little DSL for <https://api.slack.com/docs/formatting Slack formatting>.
+data Format =
+  -- | @"\<\@user|user>"@
+    FormatAt User
+  -- | @"\<\@user|user did this and that>"@
+  | FormatUser User Text
+  -- | @"\<http://example.com|user did this and that>"@
+  | FormatLink Text Text
+  -- | @"user did this &amp; that"@
+  | FormatString Text
+
+unformat :: Format -> Text
+unformat (FormatAt user@(User u)) = unformat (FormatUser user u)
+unformat (FormatUser (User u) t) = "<@" <> u <> "|" <> t <> ">"
+unformat (FormatLink url t) = "<" <> url <> "|" <> t <> ">"
+unformat (FormatString t) = foldr (\(bad, good) -> TL.replace bad good) t [("<", "&lt;"), (">", "&gt;"), ("&", "&amp;")]
+
 -- | Here's how you talk: you make one of these and pass it to 'say'.
 -- Before the day is done, Linklater will convert this to a JSON blob
 -- using 'Data.Aeson'.
-data Message = Message {
-  -- | The icon you want your message to appear as.
-  _messageIcon :: Icon,
-  -- | You need a channel. It can be a group channel or a private IM.
-  -- Alert: if it's a private IM, it'll look like it came from
-  -- slackbot (as of writing).
-  _messageChannel :: Channel,
-  -- | If 'True', full parsing will kick in.
-  _messageParsed :: Bool,
-  -- | Your big ideas go here. This will be parsed in full
-  -- (parse=full) in the Slack API sense if @_messageUnparsed@ is 'True'.
-  _messageText :: Text
-  } deriving (Eq, Ord, Show)
+--
+--   * Simple messages are parsed by Slack with parse=full (i.e. as if you had typed it into the input box).
+--
+--   * Complex messages are parsed according to Slack formatting. See 'Format'.
+--
+data Message where
+  SimpleMessage :: Icon -> Text -> Channel -> Text -> Message
+  FormattedMessage :: Icon -> Text -> Channel -> [Format] -> Message
 
 instance ToJSON Message where
-  toJSON (Message (EmojiIcon emoji) channel unparsed text) =
-    object [ "channel" .= stringOfChannel channel
-           , "icon_emoji" .= TL.concat [":", emoji, ":"]
-           , "parse" .= String (if unparsed then "full" else "poop")
-           , "username" .= String "jpgtobot"
-           , "text" .= text
-           , "unfurl_links" .= True
-           ]
+  toJSON m = case m of
+    (FormattedMessage emoji username channel formats) ->
+      toJSON_ emoji username channel (TL.intercalate " " (fmap unformat formats)) False
+    (SimpleMessage emoji username channel text) ->
+      toJSON_ emoji username channel text True
     where
+      toJSON_ (EmojiIcon emoji) username channel raw toParse =
+        object [ "channel" .= stringOfChannel channel
+               , "icon_emoji" .= TL.concat [":", emoji, ":"]
+               , "parse" .= String (if toParse then "full" else "poop")
+               , "username" .= username
+               , "text" .= raw
+               , "unfurl_links" .= True
+               ]
       stringOfChannel (GroupChannel c) = TL.concat ["#", c]
-      stringOfChannel (IMChannel m) = TL.concat ["@", m]
+      stringOfChannel (IMChannel im) = TL.concat ["@", im]
 
 -- | Like a curiosity about the world, you'll need one of these to
 -- 'say' something.
@@ -141,7 +159,7 @@ data Config = Config {
 
 -- | The 'say' function posts a 'Message', with a capital M, to Slack.
 -- It'll, however, need a 'Config' (a.k.a. incoming token) first.
-say :: Message -> Config -> IO (Response ByteString)
+say :: Message -> Config -> IO (Response BSL.ByteString)
 say message config =
   post (TL.unpack url) (encode message)
   where
