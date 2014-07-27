@@ -19,8 +19,8 @@ If you don't have Haskell, it's quite easy: [Windows](http://www.haskell.org/pla
 
 Here's a `/jpgto` bot. If you run this program and then tell Slack
 about your server (incoming hook and custom slash command) and then
-type `/jpgto diplomatico` in one of your channels, you'll get the
-image from [http://diplomatico.jpg.to](http://diplomatico.jpg.to). How, you say? _Screen scraping_.
+type `/jpgto baby corgi` in one of your channels, you'll get the
+image from [http://baby.corgi.jpg.to](baby.corgi.jpg.to). How, you say? _Screen scraping_.
 
 ```haskell
 -- Remaining imports left as an exercise to the reader.
@@ -49,7 +49,7 @@ main = let port = 3000 in putStrLn ("+ Listening on port " <> show port) >> run 
 For the full example (since this one is missing a ton of imports), see
 the `examples/` directory on GitHub.
 
-Now! `/jpgto corgi`:
+Now! `/jpgto baby corgi`:
 
 ![jpgtobot in action](corgi.jpg)
 
