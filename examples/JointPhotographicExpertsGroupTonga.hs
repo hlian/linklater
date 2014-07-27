@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings, NoImplicitPrelude #-}
 
+-- Full package here: https://github.com/hlian/jpgtobot/blob/master/Main.hs
+
 module JointPhotographicExpertsGroupTonga where
 
 import BasePrelude hiding (words, intercalate)
