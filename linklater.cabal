@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name: linklater
-version: 2.0.0.2
+version: 2.0.0.3
 synopsis: The fast and fun way to write Slack.com bots
 homepage: https://github.com/hlian/linklater
 bug-reports: https://github.com/hlian/linklater/issues
@@ -25,6 +25,10 @@ description:
   * Uses 'Text' for state-of-the-art Unicode support;
   .
   * Lovely documentation with no misspelllllings to be found;
+  .
+  * Supports <https://api.slack.com/docs/formatting Slack's formatting syntax>
+  .
+  * Comes with a fast mode (@slashSimple@) and a power mode (@slash@)
   .
   * A warm, receptive maintainer with beautiful brown eyes;
   .
