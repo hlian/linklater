@@ -110,6 +110,8 @@ newtype Icon = EmojiIcon Text deriving (Eq, Ord, Show)
 
 -- | Here's how you talk.
 data Message = Message {
+  -- | The icon you want your message to appear as.
+  _messageIcon :: Icon,
   -- | You need a channel. It can be a group channel or a private IM.
   -- Alert: if it's a private IM, it'll look like it came from
   -- slackbot (as of writing).
@@ -117,13 +119,11 @@ data Message = Message {
   -- | What you want to say. This will be parsed in full (parse=full).
   -- In the future I'll support other forms of parsing, hopefully.
   -- Poke me with a pull request if I forget.
-  _messageText :: Text,
-  -- | The icon you want your message to appear as.
-  _messageIcon :: Icon
+  _messageText :: Text
   } deriving (Eq, Ord, Show)
 
 instance ToJSON Message where
-  toJSON (Message channel text (EmojiIcon emoji)) =
+  toJSON (Message (EmojiIcon emoji) channel text) =
     object [ "channel" .= stringOfChannel channel
            , "icon_emoji" .= TL.concat [":", emoji, ":"]
            , "parse" .= String "full"
@@ -136,10 +136,10 @@ instance ToJSON Message where
 
 -- | Like a curiosity about the world, you'll need one of these to say something.
 data Config = Config {
-  -- | This is the incoming web hook token that Slack gave you. It's usually a long alphanumberic string of garbage.
-  _configIncomingHookToken :: Text,
   -- | This is where your Slack account is hosted. For example, 'trello.slack.com'.
-  _configHostname :: Text
+  _configHostname :: Text,
+  -- | This is the incoming web hook token that Slack gave you. It's usually a long alphanumberic string of garbage.
+  _configIncomingHookToken :: Text
   }
 
 -- | The 'say' function posts a Message, with a capital M, to Slack.
