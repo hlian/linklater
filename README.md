@@ -57,10 +57,13 @@ So easy. Much fast.
 
 ## Features
 
-* Uses `Text` everywhere so you can send your slash commands crazy Unicode characters all day long.
-* Lovely documentation.
-* Battle-tested.
-
+  * Uses 'Text' for state-of-the-art Unicode support;
+  * Lovely documentation with no misspelllllings to be found;
+  * Supports [Slack's formatting syntax](https://api.slack.com/docs/formatting Slack's formatting syntax)
+  * Comes with a fast mode (`slashSimple`) and a power mode (`slash`)
+  * A warm, receptive maintainer with beautiful brown eyes;
+  * Fully Haddock'd methods and module;
+  * Open source (BSD3).
 
 ## Contributors
 
