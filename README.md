@@ -23,42 +23,29 @@ type `/jpgto diplomatico` in one of your channels, you'll get the
 image from [http://diplomatico.jpg.to](http://diplomatico.jpg.to). How, you say? _Screen scraping_.
 
 ```haskell
-import Network.Linklater (say, slash,
-                          Command(..), Config(..), Icon(..), Message(..), User(..))
+import Network.Linklater (say, slash, Channel(..), Command(..), User(..), Config(..), Message(..), Icon(..))
 
-urlParser :: Parser B.ByteString
-urlParser = p
-  where
-    p = garbage *> url
-    garbage = string "src=\"" <|> (P.take 1 *> garbage)
-    url = takeTill (== _quotedbl)
+findUrl :: Text -> Maybe Text
+findUrl = fmap fromStrict . maybeResult . parse (manyTill (notChar '\n') (string "src=\"") *> takeTill (== '"'))
 
-urlFor :: Text -> IO Text
-urlFor search = do
-  r <- get (T.unpack $ F.format "http://{}.jpg.to/" [search])
-  (return . handle . parse urlParser . strictly) (r ^. responseBody)
-  where
-    strictly = B.concat . L.toChunks
-    handle (Fail i ctxs s) = error (show (i, ctxs, s))
-    handle (Partial f) = handle (f "")
-    handle (Done _ r) = toText r
+messageOf :: User -> Channel -> Text -> Text -> Message
+messageOf (User u) c search = Message (EmojiIcon "gift") c . mappend (mconcat ["@", u, `", search, "`: "])
 
 jpgto :: Maybe Command -> Application
-jpgto (Just (Command (User user) channel text)) req respond = do
-  url <- urlFor (maybe "spolsky" id text)
-  say (Message channel (response url) (EmojiIcon "gift")) config
-  (respond . responseLBS status200 headers) ""
-  where
-    response url = F.format "@{} {}" (user, url)
-    config = Config token "trello.slack.com"
-    headers = [("Content-Type", "text/plain")]
+jpgto (Just (Command user channel (Just text))) _ respond = do
+  message <- get url >>= (return . fmap (messageOf user channel text) . findUrl . decodeUtf8 . flip (^.) responseBody)
+  case (debug, message) of
+    (True, _) -> putStrLn ("+ Pretending to post " <> show message) >> respondWith ""
+    (False, Just m) -> config' >>= say m >> respondWith ""
+    (False, Nothing) -> respondWith "Something went wrong!"
+  where ourHeaders = [("Content-Type", "text/plain")]
+        respondWith = respond . responseLBS status200 ourHeaders
+        config' = (Config "trello.slack.com" . pack . filter (/= '\n')) <$> readFile "token"
+        url = "http://" <> (unpack . intercalate "." . words $ text) <> ".jpg.to/"
+        debug = False
 
 main :: IO ()
-main = do
-  let port = 80
-  putStrLn (F.format "+ Listening on port {}" [port])
-  run port (slash jpgto)
-  return ()
+main = let port = 3000 in putStrLn ("+ Listening on port " <> show port) >> run port (slash jpgto)
 ```
 
 For the full example (since this one is missing a ton of imports), see
