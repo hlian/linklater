@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name: linklater
-version: 2.0.0.0
+version: 2.0.0.1
 synopsis: The fast and fun way to write Slack.com bots
 homepage: https://github.com/hlian/linklater
 bug-reports: https://github.com/hlian/linklater/issues

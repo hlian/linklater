@@ -1,5 +1,12 @@
 -*- markdown -*-
 
+## 2014-07-27 2.0.0.1
+
+* Documentation improved with links
+* jpgtobot code shortened due to market forces
+* slashSimple
+* FormattedMessage
+
 ## 2014-07-23 1.0.0.3
 
 * Include extra source files in `.cabal`
