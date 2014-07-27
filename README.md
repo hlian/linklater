@@ -38,7 +38,7 @@ jpgto (Just (Command user channel (Just text))) = do
     (False, Nothing) -> return "Something went wrong!"
   where config' = (Config "trello.slack.com" . filter (/= '\n') . pack) <$> readFile "token"
         subdomain = (intercalate "." . fmap (filter isLetter . filter isAscii) . words) text
-        messageOf url = FormattedMessage (EmojiIcon "gift") "jpgtobot" channel [FormatAt user, FormatLink url (subdomain <> ".jpg.to>"), FormatString "no way!: &<>"]
+        messageOf url = FormattedMessage (EmojiIcon "gift") "jpgtobot" channel [FormatAt user, FormatLink url (subdomain <> ".jpg.to>")]
         debug = True
 jpgto _ = return "Type more! (Did you know? jpgtobot is only 26 lines of Haskell. <https://github.com/hlian/jpgtobot/blob/master/Main.hs>)"
 

@@ -3,35 +3,32 @@
 -- Full package here: https://github.com/hlian/jpgtobot/
 module JointPhotographicExpertsGroupTonga where
 
-import BasePrelude hiding (words, intercalate)
+import BasePrelude hiding (words, intercalate, filter)
 import Control.Lens ((^.))
+import Data.Aeson (encode)
 import Data.Attoparsec.Text.Lazy
-import Data.Text.Lazy hiding (filter)
+import Data.Char (isLetter, isAscii)
+import Data.Text.Lazy
 import Data.Text.Lazy.Encoding (decodeUtf8)
-import Network.HTTP.Types (status200)
-import Network.Linklater (say, slash, Channel(..), Command(..), User(..), Config(..), Message(..), Icon(..))
-import Network.Wai (Application, responseLBS)
+import Network.Linklater (say, slashSimple, Command(..), Config(..), Message(..), Icon(..), Format(..))
 import Network.Wai.Handler.Warp (run)
 import Network.Wreq hiding (params)
 
 findUrl :: Text -> Maybe Text
 findUrl = fmap fromStrict . maybeResult . parse (manyTill (notChar '\n') (string "src=\"") *> takeTill (== '"'))
 
-messageOf :: User -> Channel -> Text -> Text -> Message
-messageOf (User u) c search = Message (EmojiIcon "gift") c . mappend (mconcat ["@", u, " Hello, wanderer. I found you this for \"", search, "\": "])
-
-jpgto :: Maybe Command -> Application
-jpgto (Just (Command user channel (Just text))) _ respond = do
-  message <- get url >>= (return . fmap (messageOf user channel text) . findUrl . decodeUtf8 . flip (^.) responseBody)
+jpgto :: Maybe Command -> IO Text
+jpgto (Just (Command user channel (Just text))) = do
+  message <- (fmap messageOf . findUrl . decodeUtf8 . flip (^.) responseBody) <$> get ("http://" <> (unpack subdomain) <> ".jpg.to/")
   case (debug, message) of
-    (True, _) -> putStrLn ("+ Pretending to post " <> show message) >> respondWith ""
-    (False, Just m) -> config' >>= say m >> respondWith ""
-    (False, Nothing) -> respondWith "Something went wrong!"
-  where ourHeaders = [("Content-Type", "text/plain")]
-        respondWith = respond . responseLBS status200 ourHeaders
-        config' = (Config "trello.slack.com" . pack . filter (/= '\n')) <$> readFile "token"
-        url = "http://" <> (unpack . intercalate "." . words $ text) <> ".jpg.to/"
-        debug = True
+    (True, _) -> putStrLn ("+ Pretending to post " <> (unpack . decodeUtf8 . encode) message) >> return ""
+    (False, Just m) -> config' >>= say m >> return ""
+    (False, Nothing) -> return "Something went wrong!"
+  where config' = (Config "trello.slack.com" . filter (/= '\n') . pack) <$> readFile "token"
+        subdomain = (intercalate "." . fmap (filter isLetter . filter isAscii) . words) text
+        messageOf url = FormattedMessage (EmojiIcon "gift") "jpgtobot" channel [FormatAt user, FormatLink url (subdomain <> ".jpg.to>")]
+        debug = False
+jpgto _ = return "Type more! (Did you know? jpgtobot is only 26 lines of Haskell. <https://github.com/hlian/jpgtobot/blob/master/Main.hs>)"
 
 main :: IO ()
-main = let port = 3000 in putStrLn ("+ Listening on port " <> show port) >> run port (slash jpgto)
+main = let port = 3000 in putStrLn ("+ Listening on port " <> show port) >> run port (slashSimple jpgto)
