@@ -23,14 +23,18 @@ description:
   Features you could take advantage of /right now, should you choose/:
   .
   * Uses 'Text' for state-of-the-art Unicode support;
+  .
   * Lovely documentation with no misspelllllings to be found;
+  .
   * A warm, receptive maintainer with beautiful brown eyes;
+  .
   * Fully Haddock'd methods and module;
+  .
   * Open source (BSD3).
   .
   For example, maybe you want this little guy to show up in your channel:
   .
-  <<corgi.jpg>>
+  <<https://raw.githubusercontent.com/hlian/linklater/6232b950a333cfa6d5fffea997ec9ab8c2ce31ba/corgi.jpg>>
   .
   Find out how by clicking on "Network.Linklater"!
 

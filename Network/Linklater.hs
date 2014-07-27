@@ -38,7 +38,7 @@
 --
 -- One @/jpgto baby corgi@, et voila.
 --
--- <<corgi.jpg>>
+-- <<https://raw.githubusercontent.com/hlian/linklater/6232b950a333cfa6d5fffea997ec9ab8c2ce31ba/corgi.jpg>>
 --
 -- For the full example (since this one is missing a ton of imports),
 -- see the @examples/@ directory on GitHub.
