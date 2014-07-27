@@ -27,7 +27,7 @@ image from [http://baby.corgi.jpg.to](baby.corgi.jpg.to). How, you say? _Screen 
 import Network.Linklater (say, slashSimple, Command(..), Config(..), Message(..), Icon(..), Format(..))
 
 findUrl :: Text -> Maybe Text
-findUrl = fmap fromStrict . maybeResult . parse (manyTill (notChar '\n') (string "src=\"") *> takeTill (== '"'))
+findUrl = fmap fromStrict . maybeResult . parse (manyTill (notChar '\n') (string "src=\"") *> takeTill (== _quotedbl))
 
 jpgto :: Maybe Command -> IO Text
 jpgto (Just (Command user channel (Just text))) = do
