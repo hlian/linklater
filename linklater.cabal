@@ -3,11 +3,12 @@
 
 name: linklater
 version: 2.0.0.0
-synopsis: Write bots for your Slack account, and then go to sleep (because it's so easy and late at night)
+synopsis: The fast and fun way to write Slack.com bots
 homepage: https://github.com/hlian/linklater
+bug-reports: https://github.com/hlian/linklater/issues
 license: BSD3
 license-file: LICENSE
-author: Hao Lian
+author: Hao Lian <me@haolian.org>
 maintainer: me@haolian.org
 category: Network
 build-type: Simple
@@ -15,7 +16,17 @@ cabal-version: >=1.10
 
 description:
   .
-  A library for writing <https://slack.com/> Slack chat bots.
+  __A library for writing <https://slack.com/> Slack chat bots.__
+  .
+  Tutorial: <https://github.com/hlian/linklater/wiki/Tutorial>
+  .
+  Features you could take advantage of /right now, should you choose/:
+  .
+  * Uses 'Text' for state-of-the-art Unicode support;
+  * Lovely documentation with no misspelllllings to be found;
+  * A warm, receptive maintainer with beautiful brown eyes;
+  * Fully Haddock'd methods and module;
+  * Open source (BSD3).
 
 extra-source-files:
   examples/*.hs
@@ -43,4 +54,9 @@ library
     bytestring >=0.10.4.0 && <0.11,
     text >=1.1.1.3 && <1.2,
     containers >=0.5 && <0.6,
-    wai >=3.0.0.2 && <3.1
+    wai >=3.0.0.2 && <3.1,
+    http-types >=0.8.5 && <0.9
+
+source-repository head
+  type: git
+  location: https://github.com/hlian/linklater
