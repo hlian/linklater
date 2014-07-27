@@ -1,16 +1,14 @@
 -*- markdown -*-
 
-## 2014-07-27 2.0.0.1
+## 2014-07-27 2.0.0
 
 * Documentation improved with links
 * jpgtobot code shortened due to market forces
 * slashSimple
 * FormattedMessage
 
-## 2014-07-23 1.0.0.3
+## 2014-07-23 1.0.0
 
-* Include extra source files in `.cabal`
-
-## 2014-07-23 1.0.0.2 (and 1.0.0.1)
-
-* Lower dependency constraints for GHC 7.6.x users
+* Initial release
+* slash and run
+* Command, Channel, User, Message, Icon
