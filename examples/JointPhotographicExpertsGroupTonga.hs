@@ -18,7 +18,7 @@ findUrl :: Text -> Maybe Text
 findUrl = fmap fromStrict . maybeResult . parse (manyTill (notChar '\n') (string "src=\"") *> takeTill (== '"'))
 
 jpgto :: Maybe Command -> IO Text
-jpgto (Just (Command user channel (Just text))) = do
+jpgto (Just (Command commandText user channel (Just text))) = do
   message <- (fmap messageOf . findUrl . decodeUtf8 . flip (^.) responseBody) <$> get ("http://" <> (unpack subdomain) <> ".jpg.to/")
   case (debug, message) of
     (True, _) -> putStrLn ("+ Pretending to post " <> (unpack . decodeUtf8 . encode) message) >> return ""

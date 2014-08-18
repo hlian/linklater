@@ -85,6 +85,8 @@ newtype User = User Text deriving (Eq, Ord, Show)
 -- | Incoming HTTP requests to the slash function get parsed into one
 -- of these babies.
 data Command = Command {
+  -- | The type of command it is.
+  _commandCommandText :: Maybe Text,
   -- | Who ran your slash command.
   _commandUser :: User,
   -- | Where the person ran your slash command.
@@ -187,13 +189,15 @@ slash f req respond = f command req respond
     command = do
       user <- userOf <$> wishFor "user_name"
       channel <- wishFor "channel_name" >>= channelOf user
+      let commandText = commandOf <$> wishFor "command"
       let text = wishFor "text"
-      return (Command user channel text)
+      return (Command commandText user channel text)
     wishFor key = case M.lookup (key :: Text) params of
       Just (Just "") -> Nothing
       Just (Just value) -> Just value
       _ -> Nothing
     userOf = User . TL.filter (/= '@')
+    commandOf = TL.filter (/= '/')
     channelOf (User u) "directmessage" = Just (IMChannel u)
     channelOf _ "privategroup" = Nothing
     channelOf _ c = Just (GroupChannel c)
