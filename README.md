@@ -69,4 +69,5 @@ So easy. Much fast.
 
 * [Hao Lian](https://hao.codes), author
 * [Ian Henry](https://ianthehenry.com), design review and _future contributor_???
+* [Ulysses Popple](http://upopple.com/)
 * *Shields* (the Grizzly Bear album), which I listened all the way through for the first time while I was writing this ★★★★
