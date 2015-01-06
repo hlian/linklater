@@ -37,6 +37,7 @@ If you don't have Haskell, it's quite easy: [Windows](http://www.haskell.org/pla
 
 * [Hao Lian](https://hao.codes), author;
 * [Ulysses Popple](http://upopple.com/); and
+* [Ian Henry](https://ianthehenry.com/), who showed me the `flip (+) foo` -> `(+ foo)` trick;
 * *Shields* (the Grizzly Bear album), which I listened all the way through for the first time while I was writing this ★★★★.
 
 ## See also
