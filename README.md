@@ -17,47 +17,15 @@ If you don't have Haskell, it's quite easy: [Windows](http://www.haskell.org/pla
 
 ## Show me an example!
 
-Here's a `/jpgto` bot. If you run this program and then tell Slack
-about your server (incoming hook and custom slash command) and then
-type `/jpgto baby corgi` in one of your channels, you'll get the
-image from [http://baby.corgi.jpg.to](baby.corgi.jpg.to). How, you say? _Screen scraping_.
+* [jpgtobot](https://github.com/hlian/jpgtobot/blob/master/Main.hs) is a slackbot that pastes the image at `foo.jpg.to` into chat. It even supports jpgto's flags: so `-- r+gif` will give you a GIF, randomly selected from all known images named `foo`. Thanks to the magic of -screen scraping-.
+  
+  ![jpgtobot in action](corgi.jpg)
 
-```haskell
--- Remaining imports left as an exercise to the reader.
-import Network.Linklater (say, slashSimple, Command(..), Config(..), Message(..), Icon(..), Format(..))
-
-findUrl :: Text -> Maybe Text
-findUrl = fmap fromStrict . maybeResult . parse (manyTill (notChar '\n') (string "src=\"") *> takeTill (== _quotedbl))
-
-jpgto :: Maybe Command -> IO Text
-jpgto (Just (Command user channel (Just text))) = do
-  message <- (fmap messageOf . findUrl . decodeUtf8 . flip (^.) responseBody) <$> get ("http://" <> (unpack subdomain) <> ".jpg.to/")
-  case (debug, message) of
-    (True, _) -> putStrLn ("+ Pretending to post " <> (unpack . decodeUtf8 . encode) message) >> return ""
-    (False, Just m) -> config' >>= say m >> return ""
-    (False, Nothing) -> return "Something went wrong!"
-  where config' = (Config "trello.slack.com" . filter (/= '\n') . pack) <$> readFile "token"
-        subdomain = (intercalate "." . fmap (filter isLetter . filter isAscii) . words) text
-        messageOf url = FormattedMessage (EmojiIcon "gift") "jpgtobot" channel [FormatAt user, FormatLink url (subdomain <> ".jpg.to>")]
-        debug = True
-jpgto _ = return "Type more! (Did you know? jpgtobot is only 26 lines of Haskell. <https://github.com/hlian/jpgtobot/blob/master/Main.hs>)"
-
-main :: IO ()
-main = let port = 3000 in putStrLn ("+ Listening on port " <> show port) >> run port (slashSimple jpgto)
-```
-
-For the full example (since this one is missing a ton of imports), see
-the `examples/` directory on GitHub.
-
-Now! `/jpgto baby corgi`:
-
-![jpgtobot in action](corgi.jpg)
-
-So easy. Much fast.
+* [hi5bot](https://github.com/hlian/hi5bot/blob/master/Main.hs) lets you high-five people. There are other amazing things it can do too.
 
 ## Features
 
-  * Uses 'Text' for state-of-the-art Unicode support;
+  * Uses `Text` for state-of-the-art Unicode support;
   * Lovely documentation with no misspelllllings to be found;
   * Supports [Slack's formatting syntax](https://api.slack.com/docs/formatting Slack's formatting syntax)
   * Comes with a fast mode (`slashSimple`) and a power mode (`slash`)
@@ -67,7 +35,10 @@ So easy. Much fast.
 
 ## Contributors
 
-* [Hao Lian](https://hao.codes), author
-* [Ian Henry](https://ianthehenry.com), design review and _future contributor_???
-* [Ulysses Popple](http://upopple.com/)
-* *Shields* (the Grizzly Bear album), which I listened all the way through for the first time while I was writing this ★★★★
+* [Hao Lian](https://hao.codes), author;
+* [Ulysses Popple](http://upopple.com/); and
+* *Shields* (the Grizzly Bear album), which I listened all the way through for the first time while I was writing this ★★★★.
+
+## See also
+
+* [tightrope](https://github.com/ianthehenry/tightrope), a library Ian should really document
