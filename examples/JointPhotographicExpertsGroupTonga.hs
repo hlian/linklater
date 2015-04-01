@@ -1,34 +1,93 @@
-{-# LANGUAGE OverloadedStrings, NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
--- Full package here: https://github.com/hlian/jpgtobot/
-module JointPhotographicExpertsGroupTonga where
+-- If writing Slack bots intrigues you, check out: https://github.com/hlian/linklater
 
-import BasePrelude hiding (words, intercalate, filter)
-import Control.Lens ((^.))
-import Data.Aeson (encode)
-import Data.Attoparsec.Text.Lazy
-import Data.Char (isLetter, isAscii)
-import Data.Text.Lazy
-import Data.Text.Lazy.Encoding (decodeUtf8)
-import Network.Linklater (say, slashSimple, Command(..), Config(..), Message(..), Icon(..), Format(..))
-import Network.Wai.Handler.Warp (run)
-import Network.Wreq hiding (params)
+import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 
-findUrl :: Text -> Maybe Text
-findUrl = fmap fromStrict . maybeResult . parse (manyTill (notChar '\n') (string "src=\"") *> takeTill (== '"'))
+import           Control.Lens ((^.))
+import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.Trans.Maybe (MaybeT, runMaybeT)
+import           Data.Aeson (encode)
+import           Data.ByteString.Lazy (ByteString)
+import           Data.Char (isAlphaNum, isAscii)
+import           Data.Text (Text)
+import           Data.Text.Lazy.Encoding (decodeUtf8)
+import           Network.HTTP.Base (urlEncode)
+import           Network.Wai.Handler.Warp (run)
+
+-- Naked imports.
+import           BasePrelude hiding (words, intercalate)
+import           Data.Attoparsec.Text.Lazy
+import           Network.Linklater
+import           Network.Wreq hiding (params)
+
+findURL :: ByteString -> Maybe Text
+findURL =
+  encode . parse (manyTill (notChar '\n') (string "src=\"") *> takeTill (== '"')) . decode
+  where
+    encode =
+      maybeResult
+    decode =
+      decodeUtf8
+
+configIO :: IO Config
+configIO =
+  Config <$> (T.filter (/= '\n') . T.pack <$> readFile "hook")
+
+urlOf :: Text -> Text -> String
+urlOf query path =
+  "http://" <> urlEncode (T.unpack query) <> ".jpg.to/" <> T.unpack path
+
+parseText :: Text -> Maybe (Text, Text)
+parseText text =
+  f (filter (/= "") (T.strip <$> T.splitOn "--" text))
+  where
+    f []             = mzero
+    f [raw]          = return (parseRaw raw, "")
+    f [raw, options] = return (parseRaw raw, "/" <> options)
+    f _              = mzero
+    parseRaw         = T.intercalate "." . T.words
+
+liftMaybe :: Maybe a -> MaybeT IO a
+liftMaybe = maybe mzero return
+
+messageOfCommand :: Command -> MaybeT IO Message
+messageOfCommand (Command "jpeg" _ _ (Nothing)) =
+  mzero
+messageOfCommand (Command "jpeg" user channel (Just text)) = do
+  (query, path) <- liftMaybe (parseText text)
+  response <- liftIO (get (urlOf query path))
+  url <- liftMaybe (findURL $ response ^. responseBody)
+  return (messageOf [FormatAt user, FormatLink url (query <> ".jpg.to" <> path)])
+  where
+    messageOf =
+      FormattedMessage (EmojiIcon "gift") "jpgtobot" channel
 
 jpgto :: Maybe Command -> IO Text
-jpgto (Just (Command commandText user channel (Just text))) = do
-  message <- (fmap messageOf . findUrl . decodeUtf8 . flip (^.) responseBody) <$> get ("http://" <> (unpack subdomain) <> ".jpg.to/")
+jpgto Nothing = do
+  return "Unrecognized Slack request!"
+
+jpgto (Just command) = do
+  putStrLn ("+ Incoming command: " <> show command)
+  config <- configIO
+  message <- (runMaybeT . messageOfCommand) command
+  putStrLn ("+ Outgoing messsage: " <> show (encode <$> message))
   case (debug, message) of
-    (True, _) -> putStrLn ("+ Pretending to post " <> (unpack . decodeUtf8 . encode) message) >> return ""
-    (False, Just m) -> config' >>= say m >> return ""
-    (False, Nothing) -> return "Something went wrong!"
-  where config' = (Config "trello.slack.com" . filter (/= '\n') . pack) <$> readFile "token"
-        subdomain = (intercalate "." . fmap (filter isLetter . filter isAscii) . words) text
-        messageOf url = FormattedMessage (EmojiIcon "gift") "jpgtobot" channel [FormatAt user, FormatLink url (subdomain <> ".jpg.to>")]
-        debug = False
-jpgto _ = return "Type more! (Did you know? jpgtobot is only 26 lines of Haskell. <https://github.com/hlian/jpgtobot/blob/master/Main.hs>)"
+    (False, Just m) -> do
+      say m config
+      return ""
+    (False, Nothing) ->
+      return "*FRIZZLE* ERROR PROCESSING INPUT; BEGIN SELF-DETONATION; PLEASE FILE ISSUE AT <https://github.com/hlian/jpgtobot>"
+    _ ->
+      return ""
+  where
+    debug = False
 
 main :: IO ()
-main = let port = 3000 in putStrLn ("+ Listening on port " <> show port) >> run port (slashSimple jpgto)
+main = do
+  putStrLn ("+ Listening on port " <> show port)
+  run port (slashSimple jpgto)
+    where
+      port = 3333
