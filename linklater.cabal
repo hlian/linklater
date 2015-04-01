@@ -36,11 +36,9 @@ description:
   .
   * Open source (BSD3).
   .
-  For example, maybe you want this little guy to show up in your channel:
+  Shamelessly cute example:
   .
   <<https://raw.githubusercontent.com/hlian/linklater/38536bebf00c60fb1214b2c3a741ce00485e87af/corgi.jpg>>
-  .
-  Find out how by clicking on "Network.Linklater"!
 
 extra-source-files:
   examples/*.hs
