@@ -1,5 +1,13 @@
 -*- markdown -*-
 
+## 2015-04-01 3.1.0
+
+* Removed: silly usage of GADTs
+* Simpler: incoming hook tokens are now incoming hook URLs
+* Corgi picture: made bigger
+* Added: Command now carries the name of the command
+  * Patch by Ulysses Popple
+
 ## 2014-07-27 2.0.0
 
 * Documentation improved with links
