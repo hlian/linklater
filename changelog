@@ -7,6 +7,11 @@
 * Corgi picture: made bigger
 * Added: Command now carries the name of the command
   * Patch by Ulysses Popple
+* Text: stricter!
+  * I decided to make the library take strict texts only,
+    as they are simpler to reason about and lead to fewer
+    conversions: really only WAI vends lazy text
+  * Sorry for the churn!
 
 ## 2014-07-27 2.0.0
 
