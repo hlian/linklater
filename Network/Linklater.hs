@@ -37,13 +37,15 @@ module Network.Linklater
 
 import           BasePrelude
 import           Data.Aeson
+
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Map as M
 import           Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
-import           Network.HTTP.Types (status200)
+import           Network.HTTP.Types (status200, parseSimpleQuery)
 import qualified Network.Wai as W
 import           Network.Wreq hiding (params, headers)
 
@@ -163,28 +165,25 @@ channelOf _ "privategroup" =
 channelOf _ c =
   Just (GroupChannel c)
 
+paramsIO :: W.Request -> IO (M.Map Text Text)
+paramsIO req = do
+  body <- W.strictRequestBody req
+  return (M.fromList ((second TE.decodeUtf8 . first TE.decodeUtf8) <$> parseSimpleQuery (BSL.toStrict body)))
+
 -- | A bot server! As if by magic. This acts like a 'Network.WAI'
 -- middleware: Linklater wraps around your application. (Really, it
 -- just gives you a 'Command' to work with instead of a raw HTTP
 -- request.)
 slash :: (Maybe Command -> W.Application) -> W.Application
-slash f req respond = f command req respond
+slash f req respond = do
+  params <- paramsIO req
+  f (command (`M.lookup` params)) req respond
   where
-    command = do
-      user <- userOf <$> wishFor "user_name"
-      Command <$> (nameOf <$> wishFor "command")
+    command paramOf = do
+      user <- userOf <$> paramOf "user_name"
+      Command <$> (nameOf <$> paramOf "command")
               <*> return user
-              <*> (wishFor "channel_name" >>= channelOf user)
-              <*> return (wishFor "text")
-    wishFor key =
-      case M.lookup (key :: TL.Text) params of
-       Just (Just "") ->
-         Nothing
-       Just (Just value) ->
-         Just (TL.toStrict value)
-       _ ->
-         Nothing
+              <*> (paramOf "channel_name" >>= channelOf user)
+              <*> return (paramOf "text")
     userOf = User . T.filter (/= '@')
     nameOf = T.filter (/= '/')
-    params = M.fromList [(toText k, toText <$> v) | (k, v) <- W.queryString req]
-    toText = TLE.decodeUtf8 . BSL.fromChunks . return

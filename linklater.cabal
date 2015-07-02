@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name: linklater
-version: 3.1.0.0
+version: 3.2.0.0
 synopsis: The fast and fun way to write Slack.com bots
 homepage: https://github.com/hlian/linklater
 bug-reports: https://github.com/hlian/linklater/issues
@@ -61,15 +61,15 @@ library
 
   build-depends:
     -- cabal told me to upper-constrain base
-      base <= 4.7.0.1
-    , base-prelude >= 0.1.16
-    , wreq >=0.2
-    , aeson >=0.8
-    , bytestring >=0.10.4.0
-    , text >=1.1.1.3
-    , containers >=0.5
-    , wai >=3.0.0.2
-    , http-types >=0.8.5
+      base < 4.9
+    , base-prelude
+    , wreq
+    , aeson
+    , bytestring
+    , text
+    , containers
+    , wai
+    , http-types
 
 source-repository head
   type: git
