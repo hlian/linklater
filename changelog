@@ -1,5 +1,11 @@
 -*- markdown -*-
 
+## 2015-07-21 3.2.0
+
+* Slack.com seems to have broken GET incoming hooks, so we're switching to POST
+* Support for Stack
+* Unconstrained dependencies
+
 ## 2015-04-01 3.1.0
 
 * Removed: silly usage of GADTs

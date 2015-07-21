@@ -48,10 +48,6 @@ extra-source-files:
 extra-doc-files:
   corgi.jpg
 
-flag developer
-  default: False
-  manual: True
-
 library
   default-language: Haskell2010
   ghc-options: -Wall -fwarn-tabs
