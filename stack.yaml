@@ -1,0 +1,7 @@
+flags:
+  linklater:
+    developer: false
+packages:
+- '.'
+extra-deps: []
+resolver: lts-3.5

@@ -66,6 +66,7 @@ library
     , containers
     , wai
     , http-types
+    , lens
 
 source-repository head
   type: git
