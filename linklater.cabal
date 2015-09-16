@@ -57,7 +57,7 @@ library
 
   build-depends:
     -- cabal told me to upper-constrain base
-      base < 4.9
+      base < 5
     , base-prelude
     , wreq
     , aeson
