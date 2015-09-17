@@ -1,6 +1,4 @@
-flags:
-  linklater:
-    developer: false
+flags: {}
 packages:
 - '.'
 extra-deps: []
