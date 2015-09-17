@@ -1,0 +1,8 @@
+flags: {}
+packages:
+- '.'
+- '..'
+- location:
+    git: git@github.com:hlian/jpg-cli
+    commit: bbf4
+resolver: lts-3.5
