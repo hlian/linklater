@@ -18,6 +18,7 @@ executable jpegbot
                      , lens
                      , linklater
                      , mtl
+                     , random
                      , text
                      , warp
                      , wreq

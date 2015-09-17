@@ -63,7 +63,11 @@ jpgto command = do
       return ""
     (False, Left errorMessage) ->
       return ("jpegbot encountered an error, is on fire now: " <> (errorMessage ^. packed))
-    _ ->
+    (True, Right m) -> do
+      putStrLn ("+ Outgoing messsage: " <> show (encode m))
+      return ""
+    (True, Left errorMessage) -> do
+      putStrLn ("+ Outgoing ERROR: " <> errorMessage)
       return ""
   where
     debug = False

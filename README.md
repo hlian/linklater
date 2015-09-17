@@ -18,10 +18,14 @@ If you don't have Haskell, it's quite easy: [Windows](http://www.haskell.org/pla
 ## Show me an example!
 
 * [jpgtobot](https://github.com/hlian/jpgtobot/blob/master/Main.hs) is a slackbot that pastes the image at `foo.jpg.to` into chat. It even supports jpgto's flags: so `-- r+gif` will give you a GIF, randomly selected from all known images named `foo`. Thanks to the magic of -screen scraping-.
-  
+
   ![jpgtobot in action](https://raw.githubusercontent.com/hlian/linklater/38536bebf00c60fb1214b2c3a741ce00485e87af/corgi.jpg)
 
 * [hi5bot](https://github.com/hlian/hi5bot/blob/master/Main.hs) lets you high-five people. There are other amazing things it can do too.
+
+* [huskybot](https://github.com/hlian/huskybot) is for people who need pictures of huskies, now. [As featured on Wired.](http://www.wired.com/2015/08/slack-overrun-bots-friendly-wonderful-bots/all/1)
+
+* [mathbot](https://github.com/hlian/mathbot) takes in LaTeX, spits out PNGs.
 
 ## Features
 
