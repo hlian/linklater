@@ -63,7 +63,7 @@ responseOf status message =
 say :: Message -> Config -> IO (Response Text)
 say message Config{..} = do
   response <- post (T.unpack _configHookURL) (Aeson.encode message)
-  return ((^. strict . utf8) <$> response)
+  return (response <&> (^. strict . utf8))
 
 -- | A bot server for people who are in a hurry. Make a function that
 -- takes a 'Command' and returns some 'Text' in 'IO' world, and we'll
