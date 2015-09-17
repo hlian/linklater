@@ -70,7 +70,7 @@ jpgto command = do
       putStrLn ("+ Outgoing ERROR: " <> errorMessage)
       return ""
   where
-    debug = False
+    debug = True
 
 main :: IO ()
 main = do
