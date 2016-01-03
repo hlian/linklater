@@ -5,4 +5,5 @@ packages:
 - location:
     git: git@github.com:hlian/jpg-cli
     commit: bbf4
-resolver: lts-3.5
+  extra-dep: true
+resolver: lts-3.20
