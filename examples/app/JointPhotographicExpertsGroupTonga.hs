@@ -39,11 +39,11 @@ parseQuery query = case strip query of
 messageOfCommand :: Command -> JPEGMonad Message
 messageOfCommand (Command "jpeg" user channel (Just query)) = do
   urls <- (Search.linksOfQuery <$> liftIO googleConfigIO <*> parseQuery query) >>= liftIO
-  case urls of
-    [] ->
+  maybeURL <- liftIO (sample urls)
+  case maybeURL of
+    Nothing ->
       throwError "no images found"
-    _ -> do
-      url <- liftIO (sample urls)
+    Just url -> do
       return (messageOf [FormatAt user, FormatLink url url])
   where
     messageOf =

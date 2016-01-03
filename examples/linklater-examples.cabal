@@ -19,6 +19,7 @@ executable jpegbot
                      , linklater
                      , mtl
                      , random
+                     , random-shuffle
                      , text
                      , warp
                      , wreq
