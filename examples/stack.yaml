@@ -6,4 +6,6 @@ packages:
     git: git@github.com:hlian/jpg-cli
     commit: bbf4
   extra-dep: true
+extra-deps:
+- wuss-1.0.2
 resolver: lts-3.20
