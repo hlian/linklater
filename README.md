@@ -11,7 +11,7 @@ Installing (OS X)
 
 * brew install haskell-stack
 * stack setup
-* alias b='stack build --ghc-options="-O0"
+* alias b='stack build --ghc-options="-O0"'
 * b
 
 
@@ -70,4 +70,16 @@ Our fierce competition
 * tightrope – a library Ian should
   really document
   <https://github.com/ianthehenry/tightrope>
+
+
+Code of conduct
+---------------
+
+All contributors to this project
+solemnly swear to follow the code of
+conduct, cross their hearts hope to die
+spit a seed into an eagle’s eye.
+
+http://contributor-covenant.org/version/1/2/0/
+
 ```
