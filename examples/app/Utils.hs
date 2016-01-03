@@ -1,13 +1,9 @@
 module Utils where
 
-import Data.Array.IO (IOArray, readArray, writeArray, newListArray)
-import System.Random (randomRIO)
 import System.Random.Shuffle (shuffleM)
 
 -- Naked imports
 import BasePrelude
-
-type Permutation a = IOArray Int a
 
 -- | Randomly shuffle a list
 --   /O(N)/

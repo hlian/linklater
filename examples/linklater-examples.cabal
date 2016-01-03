@@ -10,7 +10,6 @@ executable jpegbot
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       HTTP
                      , aeson
-                     , array
                      , attoparsec
                      , base < 5
                      , base-prelude
