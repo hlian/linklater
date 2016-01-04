@@ -1,85 +1,81 @@
-```markdown
+<pre>
 
-Has your company ever switched to using
-Slack <https://slack.com>, and then you
-wanted to write silly Slack bots in
-Haskell as a way to learn Haskell?
-
-
-Installing (OS X)
------------------
-
-* brew install haskell-stack
-* stack setup
-* alias b='stack build --ghc-options="-O0"'
-* b
+/\ \     /\ \ /\ "-.\ \ /\ \/ /  /\ \     /\  __ \ /\__  _\/\  ___\ /\  == \
+\ \ \____\ \ \\ \ \-.  \\ \  _"-.\ \ \____\ \  __ \\/_/\ \/\ \  __\ \ \  __<
+ \ \_____\\ \_\\ \_\\"\_\\ \_\ \_\\ \_____\\ \_\ \_\  \ \_\ \ \_____\\ \_\ \_\
+  \/_____/ \/_/ \/_/ \/_/ \/_/\/_/ \/_____/ \/_/\/_/   \/_/  \/_____/ \/_/ /_/
 
 
-Bots built with Linklater
--------------------------
-
-* jpgtobot – uses @dpatti’s jpg-to
-  library to search for JPEGs on the
-  internet. Usage: `/jpeg togepi` or
-  `/jpeg two headed boy`. See the
-  `examples/` directory for code.
-
-* hi5bot – lets you high-five people,
-  among other amazing interactions.
-  Usage: `/hi5 susan`, `/hi5`. See
-  <https://github.com/hlian/hi5bot/>.
-
-* huskybot – as featured in _Wired_
-  magazine.
-  <https://github.com/hlian/huskybot>
-  <http://www.wired.com/2015/08/slack-overrun-bots-friendly-wonderful-bots/all/1>
-
-* mathbot – takes in LaTeX, spits out
-  PNGs. See
-  <https://github.com/hlian/mathbot>.
+The fun and sexy way to write Slack
+bots in Haskell.
 
 
-Features
---------
+<b>Installing (OS X)</b>
 
-* Lovely Haddock-friendly documentation
+• brew install haskell-stack
+• stack setup
+• alias b='stack build --ghc-options="-O0"'
+• b
+
+
+<b>Bots built with Linklater</b>
+
+• <a href="https://github.com/hlian/linklater/blob/master/examples/app/JointPhotographicExpertsGroupTonga.hs">jpgtobot</a>
+  Uses @dpatti’s jpg-to library to
+  search for JPEGs on the internet.
+  Usage: `/jpeg togepi` or `/jpeg two
+  headed boy`.
+
+• <a href="https://github.com/hlian/hi5bot/">hi5bot</a>
+  Lets you high-five people, among other
+  amazing interactions. Usage: `/hi5
+  susan`, `/hi5`.
+
+• <a href="https://github.com/hlian/huskybot">huskybot</a>
+  As featured in <em><a href="http://www.wired.com/2015/08/slack-overrun-bots-friendly-wonderful-bots/all/1">Wired magazine</a></em>.
+
+• <a href="https://github.com/hlian/mathbot">mathbot</a>
+  Takes in LaTeX, spits out PNGs. Usage:
+  `/math e^{i\pi} + 1 = 0`.
+
+
+<b>Features</b>
+
+• Lovely Haddock-friendly documentation
   with no misspelllllings to be found
-* A little DSL for the Slack formatting
-  syntax
-  <https://api.slack.com/docs/formatting>
-* Comes, out of the box!, with a fast
+
+• A little DSL for the <a href="https://api.slack.com/docs/formatting">Slack formatting
+  syntax</a>
+
+• Comes, out of the box!, with a fast
   mode (`slashSimple`) and a power mode
   (`slash`)
-* A warm, receptive maintainer with
+
+• A warm, receptive maintainer with
   beautiful brown eyes
-* BSD3 license
+
+• BSD3 license
 
 
-Contributors
-------------
+<b>Contributors</b>
 
-* Hao Lian – <https://hao.codes>
-* Ulysses Popple – <http://upopple.com/>
-* Ian Henry – <https://ianthehenry.com/>
-* *Shields* by Grizzly Bear album
+• <a href="https://hao.codes">Hao Lian</a> @hlian
+• <a href="http://upopple.com/">Ulysses Popple</a> @ulyssesp
+• <a href="https://ianthehenry.com/">Ian Henry</a> @ianthehenry
 
 
-Our fierce competition
-----------------------
+<b>Our fierce competition</b>
 
-* tightrope – a library Ian should
-  really document
-  <https://github.com/ianthehenry/tightrope>
+• <a href="https://github.com/ianthehenry/tightrope">tightrope</a>
 
 
-Code of conduct
----------------
+<b>Code of conduct</b>
 
 All contributors to this project
 solemnly swear to follow the code of
 conduct, cross their hearts hope to die
 spit a seed into an eagle’s eye.
 
-http://contributor-covenant.org/version/1/2/0/
+<a href="http://contributor-covenant.org/version/1/2/0/">~code of conduct~</a>
 
-```
+</pre>
