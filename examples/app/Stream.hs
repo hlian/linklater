@@ -8,7 +8,6 @@ import           BasePrelude hiding ((&), putStrLn, lazy)
 import           Control.Lens hiding ((.=))
 import           Control.Monad.Reader
 import           Data.Aeson
-import           Data.Aeson.Lens
 import           Data.Aeson.Types
 import           Data.Text.IO
 import           Data.Text.Strict.Lens
@@ -63,8 +62,7 @@ hum = do
                       & param "no_unreads" .~ ["1"]
   resp <- liftIO (getWith opts (u "/api/rtm.start"))
   case eitherDecode (resp ^. responseBody) of
-    Right world -> do
-      liftIO (print $ resp ^? responseBody . key "url")
+    Right world ->
       return world
     Left err ->
       error err
