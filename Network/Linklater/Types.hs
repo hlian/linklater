@@ -2,9 +2,10 @@
 
 module Network.Linklater.Types where
 
-import BasePrelude hiding (intercalate)
+import BasePrelude
 import Data.Aeson
-import Data.Text hiding (foldr)
+import Data.Text (Text)
+import qualified Data.Text as Text
 
 -- | Where 'slash' commands come from, and where 'Message's go.
 data Channel =
@@ -71,7 +72,7 @@ unformat :: Format -> Text
 unformat (FormatAt user@(User u)) = unformat (FormatUser user u)
 unformat (FormatUser (User u) t) = "<@" <> u <> "|" <> t <> ">"
 unformat (FormatLink url t) = "<" <> url <> "|" <> t <> ">"
-unformat (FormatString t) = foldr (uncurry replace) t [("<", "&lt;"), (">", "&gt;"), ("&", "&amp;")]
+unformat (FormatString t) = foldr (uncurry Text.replace) t [("<", "&lt;"), (">", "&gt;"), ("&", "&amp;")]
 
 channelOf :: User -> Text -> Maybe Channel
 channelOf (User u) "directmessage" =
@@ -90,7 +91,7 @@ instance ToJSON Channel where
 instance ToJSON Message where
   toJSON m = case m of
     (FormattedMessage emoji username channel formats) ->
-      toJSON_ emoji username channel (intercalate " " (fmap unformat formats)) False
+      toJSON_ emoji username channel (Text.unwords (unformat <$> formats)) False
     (SimpleMessage emoji username channel text) ->
       toJSON_ emoji username channel text True
     where
