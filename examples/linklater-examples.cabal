@@ -40,7 +40,10 @@ executable streambot
                      , linklater
                      , mtl
                      , network
+                     , pcre-heavy
+                     , random-shuffle
                      , text
+                     , th-printf
                      , uri-bytestring
                      , warp
                      , websockets

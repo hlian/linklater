@@ -2,8 +2,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes #-}
 
-import           BasePrelude hiding ((&), putStrLn)
+import           BasePrelude hiding ((&), putStrLn, lazy)
 import           Control.Lens hiding ((.=))
 import           Control.Monad.Reader
 import           Data.Aeson
@@ -11,19 +12,21 @@ import           Data.Aeson.Lens
 import           Data.Aeson.Types
 import           Data.Text.IO
 import           Data.Text.Strict.Lens
+import           Text.Printf.TH
 import           Network.Wreq
 import           URI.ByteString
 
-import           Data.ByteString (ByteString)
-import           Data.Text (Text)
+import           StateMachine
+import           Types
+import           Utils
+
 import qualified Network.WebSockets as Sock
 import qualified System.Environment as Env
 import qualified Wuss as Sock
 
-type Bytes = ByteString
 data Brain = Brain { _api, _bearer :: !Text } deriving (Show)
 data World = World { _wss :: !URI } deriving (Show)
-data Speech = Speech { _channel, _t :: !Text } deriving (Show)
+data Speech = Speech { _replyTo :: Line, _t :: !Text } deriving (Show)
 data Speech' = Speech' { _speech :: !Speech, _id :: !Int } deriving (Show)
 
 makeLenses ''Brain
@@ -43,8 +46,14 @@ instance FromJSON World where
     typeMismatch "World" invalid
 
 instance ToJSON Speech' where
-  toJSON (Speech' (Speech channel t) id_) =
-    object ["id" .= id_, "channel" .= channel, "text" .= t, "type" .= ("message" :: String)]
+  toJSON (Speech' (Speech line t) id_) =
+    object [ "id" .= id_
+           , "channel" .= _channel line
+           , "text" .= t
+           , "type" .= ("message" :: String)
+           ]
+  -- toEncoding (Speech' (Speech channel t) id_) =
+  --   pairs ("id" .= id_ <> "channel" .= channel <> "text" .= t <> "type" .= ("message" :: String))
 
 hum :: (MonadReader Brain m, MonadIO m) => m World
 hum = do
@@ -101,14 +110,49 @@ logChan inbox =
   withInbox inbox $ \msg ->
     putStrLn (msg ^. utf8)
 
+newMachine :: IO (MVar Machine)
+newMachine = newMVar (Machine [])
+
+newNonsense :: IO [Text]
+newNonsense =
+  shuffle nonsense
+  where
+    nonsense :: [Text]
+    nonsense = [ "sounds surprisingly wet"
+               , "wakes up the owls next door"
+               , "brings a tear to your eye"
+               , "rouses the long-dormant autombile industry"
+               ]
+
+updateMachine :: MVar Machine -> Line -> IO (Maybe Line)
+updateMachine machineM line =
+  modifyMVar machineM (return . feed line)
+
+alert :: Line -> Line -> [Text] -> MVar Int -> IO Text
+alert l0 l1 nonsense nonsenseIndexM =
+  if (l0 ^. user) == (l1 ^. user) then
+    return $ [st|<@%s> high-fives <@%s>! People avert their eyes in shame.|] (l0 ^. user) (l1 ^. user)
+  else do
+    idx <- modifyMVar nonsenseIndexM (\idx -> return (idx + 1 `mod` length nonsense, idx))
+    return $ [st|<@%s> and <@%s> high five! Their high-five %s.|] (l0 ^. user) (l1 ^. user) (nonsense !! idx)
+
 parseChan :: Chan Bytes -> Chan Speech -> IO ()
-parseChan inbox outbox =
+parseChan inbox outbox = do
+  machineM <- newMachine
+  nonsense <- newNonsense
+  nonsenseIndexM <- newMVar 0
   withInbox inbox $ \msg ->
-    case (msg ^? key "text" . _String, msg ^? key "channel" . _String, msg ^? key "reply_to") of
-      (Just speech, Just channel, Nothing) ->
-        writeChan outbox (Speech channel speech)
-      _ ->
+    case eitherDecode (msg ^. lazy) of
+      Left _ ->
         return ()
+      Right line -> do
+        maybeMatch <- updateMachine machineM line
+        case maybeMatch of
+          Just match -> do
+            a <- alert match line nonsense nonsenseIndexM
+            writeChan outbox (Speech line a)
+          Nothing ->
+            return ()
 
 -- | Empties out the original channel, so as to prevent memory leaks.
 sinkChan :: Chan Bytes -> IO ()
@@ -120,6 +164,5 @@ main = void $ do
   outbox <- newChan
   world <- stage0
   chan <- stage1 (world ^. wss) outbox
-  logChan chan
   parseChan chan outbox
   sinkChan chan
