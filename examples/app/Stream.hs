@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoImplicitPrelude #-}
@@ -19,13 +20,14 @@ import           StateMachine
 import           Types
 import           Utils
 
+import qualified Data.Text as Text
 import qualified Network.WebSockets as Sock
 import qualified System.Environment as Env
 import qualified Wuss as Sock
 
 data Brain = Brain { _api, _bearer :: !Text } deriving (Show)
 data World = World { _wss :: !URI } deriving (Show)
-data Speech = Speech { _replyTo :: Line, _t :: !Text } deriving (Show)
+data Speech = Speech { _replyTo :: !Line, _t :: !Text } deriving (Show)
 data Speech' = Speech' { _speech :: !Speech, _id :: !Int } deriving (Show)
 
 makeLenses ''Brain
@@ -47,7 +49,7 @@ instance FromJSON World where
 instance ToJSON Speech' where
   toJSON (Speech' (Speech line t) id_) =
     object [ "id" .= id_
-           , "channel" .= _channel line
+           , "channel" .= (line ^. channel)
            , "text" .= t
            , "type" .= ("message" :: String)
            ]
@@ -96,17 +98,20 @@ stage1 uri outbox =
           speech <- readChan outbox
           Sock.sendTextData conn (encode (Speech' speech 1))
 
-withInbox :: Chan Bytes -> (Bytes -> IO a) -> IO ()
+withInbox :: FromJSON a => Chan Bytes -> (a -> IO b) -> IO ()
 withInbox inbox cont = do
   chan <- dupChan inbox
   (void . forkIO . forever) $ do
     bytes <- readChan chan
-    cont bytes
+    case eitherDecode (bytes ^. lazy) of
+      Left _ ->
+        return ()
+      Right o ->
+        void (cont o)
 
 logChan :: Chan Bytes -> IO ()
 logChan inbox =
-  withInbox inbox $ \msg ->
-    putStrLn (msg ^. utf8)
+  withInbox inbox putStrLn
 
 newMachine :: IO (MVar Machine)
 newMachine = newMVar (Machine [])
@@ -122,40 +127,49 @@ newNonsense =
                , "rouses the long-dormant autombile industry"
                ]
 
-updateMachine :: MVar Machine -> Line -> IO (Maybe Line)
-updateMachine machineM line =
-  modifyMVar machineM (return . feed line)
+updateMachine :: MVar Machine -> Want -> IO (Maybe Want)
+updateMachine machineM want =
+  modifyMVar machineM (return . feed want)
 
-alert :: Line -> Line -> [Text] -> MVar Int -> IO Text
-alert l0 l1 nonsense nonsenseIndexM =
-  if (l0 ^. user) == (l1 ^. user) then
-    return $ [st|<@%s> high-fives <@%s>! People avert their eyes in shame.|] (l0 ^. user) (l1 ^. user)
+alert :: Want -> Want -> [Text] -> MVar Int -> IO Text
+alert w0 w1 nonsense nonsenseIndexM =
+  if u0 == u1 then
+    return $ [st|<@%s> high-fives <@%s>! People avert their eyes in shame.|] u0 u1
   else do
     idx <- modifyMVar nonsenseIndexM (\idx -> return (idx + 1 `mod` length nonsense, idx))
-    return $ [st|<@%s> and <@%s> high five! Their high-five %s.|] (l0 ^. user) (l1 ^. user) (nonsense !! idx)
+    return $ [st|<@%s> and <@%s> high five! Their high-five %s.|] u0 u1 (nonsense !! idx)
+  where
+    u0 = w0 ^. line . user
+    u1 = w1 ^. line . user
 
 parseChan :: Chan Bytes -> Chan Speech -> IO ()
 parseChan inbox outbox = do
   machineM <- newMachine
   nonsense <- newNonsense
   nonsenseIndexM <- newMVar 0
-  withInbox inbox $ \msg ->
-    case eitherDecode (msg ^. lazy) of
-      Left _ ->
+  withInbox inbox $ \want -> do
+    maybeMatch <- updateMachine machineM want
+    case maybeMatch of
+      Just match -> do
+        a <- alert match want nonsense nonsenseIndexM
+        writeChan outbox (Speech (want ^. line) a)
+      Nothing ->
         return ()
-      Right line -> do
-        maybeMatch <- updateMachine machineM line
-        case maybeMatch of
-          Just match -> do
-            a <- alert match line nonsense nonsenseIndexM
-            writeChan outbox (Speech line a)
-          Nothing ->
-            return ()
+
+jazzChan :: Chan Bytes -> Chan Speech -> IO ()
+jazzChan inbox outbox = do
+  countM <- newMVar (0 :: Int)
+  withInbox inbox $ \line_ ->
+    when (Text.isInfixOf ":raised_hands:" (line_ ^. truth))
+         (do let victory = writeChan outbox (Speech line_  "JAZZ HANDS")
+             let update = (`mod` 3) . (+ 1) &&& id
+             count <- modifyMVar countM (return . update)
+             when (count == 2) victory)
 
 -- | Empties out the original channel, so as to prevent memory leaks.
 sinkChan :: Chan Bytes -> IO ()
 sinkChan originalChan =
-  (void . forkIO . forever) $ readChan originalChan
+  (void . forever) $ readChan originalChan
 
 main :: IO ()
 main = void $ do
@@ -163,4 +177,5 @@ main = void $ do
   world <- stage0
   chan <- stage1 (world ^. wss) outbox
   parseChan chan outbox
+  jazzChan chan outbox
   sinkChan chan

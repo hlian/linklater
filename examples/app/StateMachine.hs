@@ -8,7 +8,12 @@ module StateMachine(
     feed
   , Machine(..)
   , Line(..)
+  , Want(..)
+--- Lenses
+  , channel
+  , line
   , user
+  , truth
 ) where
 
 import BasePrelude hiding ((&), lazy)
@@ -19,17 +24,18 @@ import Text.Regex.PCRE.Heavy
 
 import Types
 
-data Want = WantOne { _target :: !Text } | WantAny deriving (Eq, Ord, Show)
-data Line = Line { _want :: !Want, _channel :: !Text, _user :: !Text } deriving (Eq, Ord, Show)
-data Machine = Machine { _lines :: ![Line] } deriving (Show)
+data Target = TargetOne { _victim :: !Text } | TargetAny deriving (Eq, Ord, Show)
+data Line = Line { _channel :: !Text, _user :: !Text, _truth :: !Text } deriving (Eq, Ord, Show)
+data Want = Want { _target :: !Target, _line :: !Line } deriving (Eq, Ord, Show)
+data Machine = Machine { _lines :: ![Want] } deriving (Show)
 makeLenses ''Line
+makeLenses ''Want
 
 instance FromJSON Line where
   parseJSON (Object o) = do
     reply_to <- o .:? "reply_to"
-    Just want_ <- parseWant <$> o .: "text"
     guard (not (isReply reply_to))
-    Line <$> pure want_ <*> o .: "channel" <*> o .: "user"
+    Line <$> o .: "channel" <*> o .: "user" <*> o .: "text"
     where
       isReply :: Maybe Int -> Bool
       isReply = isJust
@@ -37,39 +43,48 @@ instance FromJSON Line where
   parseJSON invalid =
     typeMismatch "Line" invalid
 
-parseWant' :: Text -> [(Text, [Text])]
-parseWant' = scan [re|:hand:\s*(?:<@(.+?)>|)|]
+instance FromJSON Want where
+  parseJSON whole@(Object o) = do
+    line_ <- parseJSON whole
+    Just target_ <- parseTarget <$> o .: "text"
+    return (Want target_ line_)
 
-parseWant :: Text -> Maybe Want
-parseWant = listToMaybe . map (uncurry f) . parseWant'
+  parseJSON invalid =
+    typeMismatch "Want" invalid
+
+parseTarget' :: Text -> [(Text, [Text])]
+parseTarget' = scan [re|:hand:\s*(?:<@(.+?)>|)|]
+
+parseTarget :: Text -> Maybe Target
+parseTarget = listToMaybe . map (uncurry f) . parseTarget'
   where
-    f :: Text -> [Text] -> Want
+    f :: Text -> [Text] -> Target
     f _ (username:_)=
-      WantOne username
+      TargetOne username
     f _ [] =
-      WantAny
+      TargetAny
 
-matches :: Line -> Line -> Bool
-matches line0 line1 =
-  (line0 ^. channel == line1 ^. channel) && matchingWant
+matches :: Want -> Want -> Bool
+matches want0 want1 =
+  (want0 ^. line . channel == want1 ^. line . channel) && matchingWant
   where
     matchingWant =
-      case (line0 ^. want, line1 ^. want) of
-        (WantAny, WantAny) ->
+      case (want0 ^. target, want1 ^. target) of
+        (TargetAny, TargetAny) ->
           True
-        (WantAny, WantOne target) ->
-          target == line0 ^. user
-        (WantOne target, WantAny) ->
-          target == line1 ^. user
-        (WantOne target, WantOne target') ->
-          target == line1 ^. user && target' == line0 ^. user
+        (TargetAny, TargetOne t) ->
+          t == want0 ^. line . user
+        (TargetOne t, TargetAny) ->
+          t == want1 ^. line . user
+        (TargetOne t, TargetOne t') ->
+          t == want1 ^. line . user && t' == want0 ^. line .user
 
-feed :: Line -> Machine -> (Machine, Maybe Line)
-feed line0 (Machine lines_) =
+feed :: Want -> Machine -> (Machine, Maybe Want)
+feed want0 (Machine wants) =
   (_1 %~ (Machine . nub)) $ case listToMaybe good of
     Just match ->
       (tail good <> bad, Just match)
     Nothing ->
-      (line0 : lines_, Nothing)
+      (want0 : wants, Nothing)
   where
-    (good, bad) = partition (matches line0) lines_
+    (good, bad) = partition (matches want0) wants
