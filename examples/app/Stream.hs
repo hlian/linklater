@@ -116,42 +116,53 @@ logChan inbox =
 newMachine :: IO (MVar Machine)
 newMachine = newMVar (Machine [])
 
-newNonsense :: IO [Text]
-newNonsense =
-  shuffle nonsense
-  where
-    nonsense :: [Text]
-    nonsense = [ "sounds surprisingly wet"
-               , "wakes up the owls next door"
-               , "brings a tear to your eye"
-               , "rouses the long-dormant autombile industry"
-               ]
-
 updateMachine :: MVar Machine -> Want -> IO (Maybe Want)
 updateMachine machineM want =
   modifyMVar machineM (return . feed want)
 
-alert :: Want -> Want -> [Text] -> MVar Int -> IO Text
-alert w0 w1 nonsense nonsenseIndexM =
-  if u0 == u1 then
-    return $ [st|<@%s> high-fives <@%s>! People avert their eyes in shame.|] u0 u1
+alert :: Want -> Want -> MVar Int -> IO Text
+alert w0 w1 nonsenseIndexM =
+  if u0 == u1 then do
+    idx <- modifyMVar nonsenseIndexM (\idx -> return (idx + 1, idx `mod` length sadness))
+    return $ [st|<@%s> high-fives <@%s>! %s.|] u0 u1 (sadness !! idx)
   else do
-    idx <- modifyMVar nonsenseIndexM (\idx -> return (idx + 1 `mod` length nonsense, idx))
+    idx <- modifyMVar nonsenseIndexM (\idx -> return (idx + 1, idx `mod` length nonsense))
     return $ [st|<@%s> and <@%s> high five! Their high-five %s.|] u0 u1 (nonsense !! idx)
   where
     u0 = w0 ^. line . user
     u1 = w1 ^. line . user
 
+    nonsense :: [Text]
+    nonsense = unsafePerformIO . shuffle $
+               [ "sounds surprisingly wet"
+               , "wakes up the owls next door"
+               , "brings a tear to your eye"
+               , "rouses the long-dormant autombile industry"
+               , "can heardly be heard over the roar of the stadium"
+               , "diminishes the aurora borealis (Northern Lights) happening behind it by comparison"
+               , "reminds you of mitochondria, which are the powerhouses of the cell"
+               , "erupts, at first in moans and then merely the sound of quivering flesh and sinew against bedsheets"
+               , "is transcribed and filed away, central to a murder years later"
+               ]
+
+    sadness :: [Text]
+    sadness = unsafePerformIO . shuffle $
+              [ "People avert their eyes in shame"
+              , "A howl of the lone wolf rises and falls"
+              , "A murder of crows take air"
+              , "The haunting sound of wind chimes plays a tune on this abandoned baby’s toes"
+              , "The nasty pond ripples, then lies fallow"
+              ]
+
 parseChan :: Chan Bytes -> Chan Speech -> IO ()
 parseChan inbox outbox = do
   machineM <- newMachine
-  nonsense <- newNonsense
   nonsenseIndexM <- newMVar 0
   withInbox inbox $ \want -> do
     maybeMatch <- updateMachine machineM want
     case maybeMatch of
       Just match -> do
-        a <- alert match want nonsense nonsenseIndexM
+        a <- alert match want nonsenseIndexM
         writeChan outbox (Speech (want ^. line) a)
       Nothing ->
         return ()
