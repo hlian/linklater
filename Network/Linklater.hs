@@ -41,7 +41,6 @@ import           Data.Text.Strict.Lens
 import           Network.Linklater.Types
 
 import qualified Data.Aeson as Aeson
-import qualified Data.Text as T
 import qualified Network.Wai as Wai
 
 import           Data.Map (Map, fromList)
@@ -62,7 +61,7 @@ responseOf status message =
 -- It'll, however, need a 'Config' (a.k.a. incoming token) first.
 say :: Message -> Config -> IO (Response Text)
 say message Config{..} = do
-  response <- post (T.unpack _configHookURL) (Aeson.encode message)
+  response <- post (_configHookURL ^. unpacked) (Aeson.encode message)
   return (response <&> (^. strict . utf8))
 
 -- | A bot server for people who are in a hurry. Make a function that

@@ -8,8 +8,8 @@ homepage: https://github.com/hlian/linklater
 bug-reports: https://github.com/hlian/linklater/issues
 license: BSD3
 license-file: LICENSE
-author: Hao Lian <me@haolian.org>
-maintainer: me@haolian.org
+author: Hao Lian <hi@haolian.org>
+maintainer: hi@haolian.org
 category: Network
 build-type: Simple
 cabal-version: >=1.10
