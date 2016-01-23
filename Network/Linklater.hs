@@ -88,7 +88,7 @@ slash inner req respond = do
   params <- paramsIO req
   case commandOf (\key -> params ^. at key) of
     Just command -> inner command req respond
-    Nothing -> respond (responseOf status400 "linklater: unable to parse request")
+    Nothing -> respond (responseOf status400 ("linklater: unable to parse request" <> show params ^. packed))
   where
     commandOf paramOf = do
       user <- userOf <$> paramOf "user_name"
