@@ -85,15 +85,8 @@ paramsIO req = do
 slash :: (Command -> Application) -> Application
 slash inner req respond = do
   params <- paramsIO req
-  case commandOf (\key -> params ^. at key) of
-    Just command -> inner command req respond
-    Nothing -> respond (responseOf status400 ("linklater: unable to parse request" <> show params ^. packed))
-  where
-    commandOf paramOf = do
-      user <- userOf <$> paramOf "user_name"
-      Command <$> (nameOf <$> paramOf "command")
-              <*> return user
-              <*> (paramOf "channel_name" >>= channelOf user)
-              <*> return (paramOf "text")
-    userOf = User . T.filter (/= '@')
-    nameOf = T.filter (/= '/')
+  case commandOfParams params of
+    Right command ->
+      inner command req respond
+    Left msg ->
+      respond (responseOf status400 ("linklater: unable to parse request: " <> msg ^. packed))

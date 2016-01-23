@@ -1,19 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module Network.Linklater.Types where
 
-import BasePrelude
-import Data.Aeson
 import Data.Text (Text)
 import qualified Data.Text as Text
+import qualified Data.Map as Map
 
--- | Where 'slash' commands come from, and where 'Message's go.
-data Channel =
-   -- | A public or private group.
-    GroupChannel Text
-  -- | A private conversation with your best friend -- or lover ;).
-  | IMChannel Text
-  deriving (Eq, Ord, Show)
+import BasePrelude
+import Control.Lens hiding ((.=))
+import Data.Aeson
+
+-- | The unique 'C<number>' Slack assigns to each channel. Used to
+-- 'say' things.
+type ChannelID = Text
+
+-- | Where 'slash' commands come from and where 'Message's go.
+data Channel = Channel ChannelID Text deriving (Eq, Ord, Show)
 
 -- | A username: no at-signs, just text!
 newtype User = User Text deriving (Eq, Ord, Show)
@@ -74,19 +77,23 @@ unformat (FormatUser (User u) t) = "<@" <> u <> "|" <> t <> ">"
 unformat (FormatLink url t) = "<" <> url <> "|" <> t <> ">"
 unformat (FormatString t) = foldr (uncurry Text.replace) t [("<", "&lt;"), (">", "&gt;"), ("&", "&amp;")]
 
-channelOf :: User -> Text -> Maybe Channel
-channelOf (User u) "directmessage" =
-  Just (IMChannel u)
-channelOf _ "privategroup" =
-  Nothing
-channelOf _ c =
-  Just (GroupChannel c)
+commandOfParams :: Map.Map Text Text -> Either String Command
+commandOfParams params = do
+  user <- userOf <$> paramOf "user_name"
+  channel <- Channel <$> paramOf "channel_id" <*> paramOf "channel_name"
+  Command <$> (nameOf <$> paramOf "command")
+          <*> pure user
+          <*> pure channel
+          <*> pure (either (const Nothing) Just (paramOf "text"))
+  where
+    userOf = User . Text.filter (/= '@')
+    nameOf = Text.filter (/= '/')
+    paramOf key = case params ^. at key of
+      Just value -> Right value
+      Nothing -> Left ("paramOf: no key: " <> show key)
 
 instance ToJSON Channel where
-  toJSON (GroupChannel c) =
-    String ("#" <> c)
-  toJSON (IMChannel im) =
-    String ("@" <> im)
+  toJSON (Channel cid _) = toJSON cid
 
 instance ToJSON Message where
   toJSON m = case m of

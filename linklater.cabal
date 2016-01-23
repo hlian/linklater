@@ -55,18 +55,34 @@ library
   exposed-modules: Network.Linklater
                  , Network.Linklater.Types
 
-  build-depends:
-    -- cabal told me to upper-constrain base
-      base < 5
-    , base-prelude
-    , wreq
-    , aeson
-    , bytestring
-    , text
-    , containers
-    , wai
-    , http-types
-    , lens
+  build-depends: aeson
+               , base < 5
+               , base-prelude
+               , bytestring
+               , containers
+               , http-types
+               , lens
+               , text
+               , wai
+               , wreq
+
+test-suite linklater-tests
+  type: exitcode-stdio-1.0
+  default-language: Haskell2010
+  ghc-options: -Wall -fwarn-tabs
+  hs-source-dirs: test
+  main-is: Main.hs
+
+  build-depends: aeson
+               , base < 5
+               , base-prelude
+               , bytestring
+               , containers
+               , lens
+               , lens
+               , linklater
+               , tasty
+               , tasty-hunit
 
 source-repository head
   type: git
