@@ -62,7 +62,7 @@ google want = do
 
 alert :: Want -> Text -> Text
 alert want =
-  [st|@%s has summoned @%s|] (want ^. line . user)
+  [st|<@%s> has summoned %s|] (want ^. line . user)
 
 summon :: Chan Bytes -> Chan Speech -> IO ()
 summon inbox outbox =
