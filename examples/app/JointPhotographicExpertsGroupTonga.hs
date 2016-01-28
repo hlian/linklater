@@ -7,7 +7,7 @@ import qualified Network.Images.Search as Search
 
 import           Control.Monad.Except (throwError, liftIO, runExceptT)
 import           Data.Aeson (encode)
-import           Data.Text (Text, strip)
+import           Data.Text (strip)
 import           Network.Wai.Handler.Warp (run)
 
 import           Utils (sample)
@@ -37,17 +37,17 @@ parseQuery query = case strip query of
   x -> return x
 
 messageOfCommand :: Command -> JPEGMonad Message
-messageOfCommand (Command "jpeg" user channel (Just query)) = do
+messageOfCommand (Command "jpeg" user_ channel_ (Just query)) = do
   urls <- (Search.linksOfQuery <$> liftIO googleConfigIO <*> parseQuery query) >>= liftIO
   maybeURL <- liftIO (sample urls)
   case maybeURL of
     Nothing ->
       throwError "no images found"
     Just url -> do
-      return (messageOf [FormatAt user, FormatLink url url])
+      return (messageOf [FormatAt user_, FormatLink url url])
   where
     messageOf =
-      FormattedMessage (EmojiIcon "gift") "jpgtobot" channel
+      FormattedMessage (EmojiIcon "gift") "jpgtobot" channel_
 messageOfCommand _ =
   throwError "unrecognized command"
 

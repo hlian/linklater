@@ -6,6 +6,8 @@ cabal-version:       >=1.10
 
 executable jpegbot
   hs-source-dirs:      app
+  other-modules:       Types
+                     , Utils
   main-is:             JointPhotographicExpertsGroupTonga.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       HTTP
@@ -20,6 +22,8 @@ executable jpegbot
                      , random
                      , random-shuffle
                      , text
+                     , th-printf
+                     , uri-bytestring
                      , warp
                      , wreq
                      -- a misnomer, as this actually searches Google Images
@@ -29,6 +33,12 @@ executable jpegbot
 executable streambot
   hs-source-dirs:      app
   main-is:             Stream.hs
+  other-modules:       HTTP
+                     , Live
+                     , Toys.Hi5
+                     , Types
+                     , Types
+                     , Utils
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       HTTP
                      , aeson
