@@ -12,6 +12,7 @@ import Data.Text.Strict.Lens
 import URI.ByteString
 
 import Toys.Hi5 (hi5)
+import Toys.SummonPainting (summon)
 import HTTP
 import Live
 import Types
@@ -76,6 +77,7 @@ main = void $ do
   inbox <- stage1 (world ^. wss) outbox
   hi5 inbox outbox
   jazzChan inbox outbox
+  summon inbox outbox
   when debug (logChan inbox)
   sinkChan inbox
   where
