@@ -64,12 +64,12 @@ alert :: Want -> Text -> Text
 alert want =
   [st|<@%s> has summoned %s|] (want ^. line . user)
 
+naughty :: Text
+naughty =
+  "no results, or all your results were naughty ;)"
+
 summon :: Chan Bytes -> Chan Speech -> IO ()
 summon inbox outbox =
   withInbox inbox $ \want -> do
     maybeURL <- google want
-    case maybeURL of
-      Just url ->
-        writeChan outbox (Speech (want ^. line) (alert want url))
-      Nothing ->
-        return ()
+    writeChan outbox (Speech (want ^. line) (maybe naughty (alert want) maybeURL))
