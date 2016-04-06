@@ -4,7 +4,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# OPTIONS_GHC -fdefer-type-errors #-}
 
 module Toys.SummonPainting (summon) where
 
@@ -19,7 +18,6 @@ import           Data.Text.Strict.Lens
 import           Text.Printf.TH
 import           Text.Regex.PCRE.Heavy
 
-import           Live
 import           Types
 import           Utils
 

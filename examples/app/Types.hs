@@ -22,7 +22,8 @@ module Types(
   , Line(..)
   , channel
   , user
-  , truth) where
+  , truth
+  , withInbox) where
 
 import BasePrelude hiding ((&), putStrLn, lazy)
 import Control.Lens hiding ((.=))
@@ -82,3 +83,14 @@ instance FromJSON Line where
 
   parseJSON invalid =
     typeMismatch "Line" invalid
+
+withInbox :: FromJSON a => Chan Bytes -> (a -> IO b) -> IO ()
+withInbox inbox cont = do
+  chan <- dupChan inbox
+  (void . forkIO . forever) $ do
+    bytes <- readChan chan
+    case eitherDecode (bytes ^. lazy) of
+      Left _ ->
+        return ()
+      Right o ->
+        void (cont o)

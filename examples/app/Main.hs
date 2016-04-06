@@ -14,7 +14,6 @@ import URI.ByteString
 import Toys.Hi5 (hi5)
 import Toys.SummonPainting (summon)
 import HTTP
-import Live
 import Types
 
 import qualified Data.Text as Text
