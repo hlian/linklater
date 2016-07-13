@@ -17,8 +17,7 @@ time messaging (read: web sockets).
 
 • export PATH=~/.local/bin:$PATH
 • stack setup
-• alias b='stack build --ghc-options="-O0"'
-• b
+• stack build --fast --test
 
 Right now Stack is a hard requirement
 because I hate versioning my
