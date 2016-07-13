@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -euxo pipefail
+GH_PAGES="/home/ubuntu/.cache/gh-pages/"
+stack exec docs -- $GH_PAGES

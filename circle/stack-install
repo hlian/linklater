@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -euxo pipefail
+
+STACK_VERSION=v1.1.2
+STACK_FILENAME=stack-1.1.2-linux-x86_64
+
+if [[ ! -f ~/.cache/"$STACK_FILENAME"/stack ]]; then
+  curl "https://github.com/commercialhaskell/stack/releases/download/$STACK_VERSION/$STACK_FILENAME.tar.gz" -Lo ~/.cache/stack.tar.gz;
+  tar xf ~/.cache/stack.tar.gz -C ~/.cache;
+fi
+
+sudo cp ~/.cache/"$STACK_FILENAME"/stack /usr/bin/stack;

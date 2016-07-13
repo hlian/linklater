@@ -1,0 +1,28 @@
+machine:
+  services:
+    - docker
+dependencies:
+  cache_directories:
+    - "~/.cache"
+    - "~/.stack"
+    - ".stack-work"
+
+  pre:
+    - mkdir -p ~/.cache || true
+    - mkdir -p ~/.stack || true
+    - circle/stack-install
+    - circle/gh-pages-install
+
+  override:
+    - stack setup
+    - circle/build --test --no-run-tests
+
+test:
+  override:
+    - stack test
+
+  post:
+    - circle/write-docs
+general:
+  artifacts:
+    - "~/.cache/gh-pages"

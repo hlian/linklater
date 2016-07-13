@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+set -euxo pipefail
+command stack build --fast "$@" --ghc-options="-Wall -j +RTS -A1024m -n2m -RTS"

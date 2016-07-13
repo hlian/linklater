@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euxo pipefail
+
+if [[ ! -d ~/.cache/gh-pages ]]; then
+  git clone -b gh-pages --depth=1 "https://$GITHUB_TOKEN@github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git" ~/.cache/gh-pages
+else
+  cd ~/.cache/gh-pages
+  git fetch --all
+  git reset --hard origin/gh-pages
+fi
