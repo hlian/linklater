@@ -6,10 +6,11 @@
   \/_____/ \/_/ \/_/ \/_/ \/_/\/_/ \/_____/ \/_/\/_/   \/_/  \/_____/ \/_/ /_/
 
 
-The fun and sexy way to write Slack
-bots in Haskell.
+A Haskell library for the Slack API.
+It even comes with support for real-
+time messaging (read: web sockets).
 
-
+ 
 <b>Development (OS X)</b>
 
 <a href="https://github.com/commercialhaskell/stack/releases">Install stack into ~/.local/bin/.</a>
@@ -23,11 +24,22 @@ Right now Stack is a hard requirement
 because I hate versioning my
 dependencies. Pull requests welcome!
 
+
 <b>I just want the library</b>
 
 It is on Hackage but not on Stackage.
 You will have to add "linklater-4.0.0.0"
 to "extra-deps".
+
+
+<b>I just want documentation</b>
+
+• <a href="http://hlian.github.io/linklater/hackage/">GitHub Pages</a> has documentation for
+  the master branch
+
+• <a href="https://hackage.haskell.org/package/linklater">Hackage</a> has documentation for the
+  last published version<
+
 
 <b>Bots built with Linklater</b>
 
