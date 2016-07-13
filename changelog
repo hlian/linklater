@@ -1,5 +1,12 @@
 -*- markdown -*-
 
+## 2016-07-13 4.0.0
+
+* What a long time it has been
+* CircleCI now builds, tests, and generates Haddock
+* Haddocks are published to https://hlian.github.io/linklater/hackage/
+* No more `Maybe` handling for `slashSimple` (it was useless)
+
 ## 2015-07-21 3.2.0
 
 * Slack.com seems to have broken GET incoming hooks, so we're switching to POST
