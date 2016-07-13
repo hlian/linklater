@@ -17,7 +17,7 @@ license-file:
 category:
   Network
 description: |
-  >>>please see our lovely README.md<<<
+  <https://github.com/hlian/linklater/blob/master/README.md ~please see our lovely README.md~>
 dependencies:
   - aeson
   - base

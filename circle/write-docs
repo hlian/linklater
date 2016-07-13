@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
 
 set -euxo pipefail
-GH_PAGES="/home/ubuntu/.cache/gh-pages/"
-stack exec docs -- $GH_PAGES
+DEST="/home/ubuntu/.cache/gh-pages/"
+
+command cp -a $(stack path --local-doc-root)/linklater-4.0.0.0/* -- "$DEST/hackage"
+
+command cd $DEST
+command git config --global user.name "CircleCI docs update"
+command git config --global user.email "ci@circleci.com"
+
+command git fetch --all
+command git reset --soft origin/gh-pages
+
+# if the upstream has changed because of concurrent builds, just force
+# push and let the race happen
+command git commit -am "[automated] [ci skip] write-docs: updated haddock" || true
+command git push --force origin gh-pages:gh-pages || true
