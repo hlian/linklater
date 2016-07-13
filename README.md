@@ -12,7 +12,7 @@ time messaging (read: web sockets).
 
 <b>Development (OS X)</b>
 
-<a href="https://circleci.com/gh/hlian/linklater"><img src="https://circleci.com/gh/hlian/linklater.svg?style=svg" alt="CircleCI status"></a>
+<a href="https://circleci.com/gh/hlian/linklater">CircleCI status: <img src="https://circleci.com/gh/hlian/linklater.svg?style=svg" alt="CircleCI status"></a>
  
 <a href="https://github.com/commercialhaskell/stack/releases">Install stack into ~/.local/bin/.</a>
 
