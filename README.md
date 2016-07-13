@@ -10,13 +10,24 @@ The fun and sexy way to write Slack
 bots in Haskell.
 
 
-<b>Installing (OS X)</b>
+<b>Development (OS X)</b>
 
-• brew install haskell-stack
+<a href="https://github.com/commercialhaskell/stack/releases">Install stack into ~/.local/bin/.</a>
+
+• export PATH=~/.local/bin:$PATH
 • stack setup
 • alias b='stack build --ghc-options="-O0"'
 • b
 
+Right now Stack is a hard requirement
+because I hate versioning my
+dependencies. Pull requests welcome!
+
+<b>I just want the library</b>
+
+It is on Hackage but not on Stackage.
+You will have to add "linklater-4.0.0.0"
+to "extra-deps".
 
 <b>Bots built with Linklater</b>
 
@@ -73,7 +84,7 @@ bots in Haskell.
 
 All contributors to this project
 solemnly swear to follow the code of
-conduct, cross their hearts hope to die
+conduct cross their hearts hope to die
 spit a seed into an eagle’s eye.
 
 <a href="http://contributor-covenant.org/version/1/2/0/">~code of conduct~</a>
