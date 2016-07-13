@@ -34,11 +34,11 @@ to "extra-deps".
 
 <b>I just want documentation</b>
 
-• <a href="http://hlian.github.io/linklater/hackage/">GitHub Pages</a> has documentation for
-  the master branch
-
-• <a href="https://hackage.haskell.org/package/linklater">Hackage</a> has documentation for the
-  last published version<
+• <a href="http://hlian.github.io/linklater/hackage/">GitHub Pages</a>
+  The master branch (development), built from CircleCI
+  
+• <a href="https://hackage.haskell.org/package/linklater">Hackage</a>
+  The last release
 
 
 <b>Bots built with Linklater</b>
