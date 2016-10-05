@@ -16,7 +16,7 @@ type ChannelID = Text
 
 -- | Where <tt>slash</tt> commands come from and where <a>Message</a>s go.
 data Channel
-Channel :: ChannelID -> Text -> Channel
+Channel :: !ChannelID -> !Text -> Channel
 
 -- | A username: no at-signs, just text!
 newtype User
@@ -25,19 +25,19 @@ User :: Text -> User
 -- | Incoming HTTP requests to the slash function get parsed into one of
 --   these babies.
 data Command
-Command :: Text -> User -> Channel -> Maybe Text -> Command
+Command :: !Text -> !User -> !Channel -> !(Maybe Text) -> Command
 
 -- | The command name.
-[_commandName] :: Command -> Text
+[_commandName] :: Command -> !Text
 
 -- | Who ran your slash command.
-[_commandUser] :: Command -> User
+[_commandUser] :: Command -> !User
 
 -- | Where the person ran your slash command.
-[_commandChannel] :: Command -> Channel
+[_commandChannel] :: Command -> !Channel
 
 -- | Text for the slash command, if any.
-[_commandText] :: Command -> Maybe Text
+[_commandText] :: Command -> !(Maybe Text)
 
 -- | The icon next to the messages you <tt>say</tt>. (Images unsupported
 --   right now, sorry.)
@@ -52,22 +52,22 @@ data Format
 -- | <pre>
 --   "&lt;@user|user&gt;"
 --   </pre>
-FormatAt :: User -> Format
+FormatAt :: !User -> Format
 
 -- | <pre>
 --   "&lt;@user|user did this and that&gt;"
 --   </pre>
-FormatUser :: User -> Text -> Format
+FormatUser :: !User -> !Text -> Format
 
 -- | <pre>
 --   "&lt;http://example.com|user did this and that&gt;"
 --   </pre>
-FormatLink :: Text -> Text -> Format
+FormatLink :: !Text -> !Text -> Format
 
 -- | <pre>
 --   "user did this &amp;amp; that"
 --   </pre>
-FormatString :: Text -> Format
+FormatString :: !Text -> Format
 
 -- | Here's how you talk: you make one of these and pass it to
 --   <tt>say</tt>. Before the day is done, Linklater will convert this to a
@@ -80,19 +80,55 @@ FormatString :: Text -> Format
 --   <a>Format</a>.</li>
 --   </ul>
 data Message
-SimpleMessage :: Icon -> Text -> Channel -> Text -> Message
-FormattedMessage :: Icon -> Text -> Channel -> [Format] -> Message
+SimpleMessage :: !Icon -> !Text -> !Channel -> !Text -> Message
+FormattedMessage :: !Icon -> !Text -> !Channel -> ![Format] -> Message
 
 -- | Like a curiosity about the world, you'll need one of these to
 --   <tt>say</tt> something.
 data Config
-Config :: Text -> Config
+Config :: !Text -> Config
 
 -- | This is the incoming web hook URL that Slack gave you. It's usually
 --   <tt><a>https://hooks.slack.com/services/..</a>.</tt>.
-[_configHookURL] :: Config -> Text
+[_configHookURL] :: Config -> !Text
+
+-- | An API token, either a tester token or one obtained through OAuth.
+--   
+--   See:
+--   
+--   <ul>
+--   
+--   <li><pre><a>https://api.slack.com/docs/oauth-test-tokens</a></pre></li>
+--   <li><pre><a>https://api.slack.com/docs/oauth</a></pre></li>
+--   </ul>
+newtype APIToken
+APIToken :: Text -> APIToken
+type Response = Response ByteString
+
+-- | Rather than throwing unchecked exceptions from our HTTP requests, we
+--   catch all unchecked exceptions and convert them to checked
+--   <a>RequestError</a> values.
+data RequestError
+RequestError :: !(Maybe SomeException) -> !(Maybe Response) -> !(Maybe String) -> RequestError
+
+-- | An unchecked exception, typically <a>IOException</a>, occurred
+[_requestErrorException] :: RequestError -> !(Maybe SomeException)
+
+-- | Something awry with the response, typically a non-2xx response
+[_requestErrorResponse] :: RequestError -> !(Maybe Response)
+
+-- | Something awry with the JSON decoding
+[_requestErrorDecoding] :: RequestError -> !(Maybe String)
 unformat :: Format -> Text
 commandOfParams :: Map Text Text -> Either String Command
+tryRequest :: (MonadIO m, MonadError RequestError m) => IO Response -> m Response
+promoteEither :: MonadError RequestError m => Response -> (l -> String) -> Either l r -> m r
+promoteMaybe :: MonadError RequestError m => Response -> String -> Maybe r -> m r
+asList :: [a] -> [a]
+instance GHC.Show.Show Network.Linklater.Types.RequestError
+instance GHC.Classes.Ord Network.Linklater.Types.APIToken
+instance GHC.Classes.Eq Network.Linklater.Types.APIToken
+instance GHC.Show.Show Network.Linklater.Types.APIToken
 instance GHC.Show.Show Network.Linklater.Types.Icon
 instance GHC.Classes.Ord Network.Linklater.Types.Icon
 instance GHC.Classes.Eq Network.Linklater.Types.Icon
@@ -108,6 +144,8 @@ instance GHC.Classes.Eq Network.Linklater.Types.Channel
 instance Data.Aeson.Types.Class.ToJSON Network.Linklater.Types.Channel
 instance Data.Aeson.Types.Class.ToJSON Network.Linklater.Types.Message
 
+module Network.Linklater.Batteries
+
 
 -- | Here's a <tt>/jpgto</tt> bot! If you run this program and then tell
 --   Slack about your server (incoming hook and custom slash command) and
@@ -121,25 +159,9 @@ instance Data.Aeson.Types.Class.ToJSON Network.Linklater.Types.Message
 --   
 module Network.Linklater
 
--- | The <a>say</a> function posts a <a>Message</a>, with a capital M, to
---   Slack. It'll, however, need a <a>Config</a> (a.k.a. incoming token)
---   first.
-say :: Message -> Config -> IO (Response Text)
-
--- | A bot server! As if by magic. This acts like a <a>WAI</a> middleware:
---   Linklater wraps around your application. (Really, it just gives you a
---   <a>Command</a> to work with instead of a raw HTTP request.)
-slash :: (Command -> Application) -> Application
-
--- | A bot server for people who are in a hurry. Make a function that takes
---   a <a>Command</a> and returns some <a>Text</a> in <a>IO</a> world, and
---   we'll convert it into a <a>WAI</a> application. If you want more
---   control over the request and respond, see <a>slash</a>.
-slashSimple :: (Command -> IO Text) -> Application
-
 -- | Where <tt>slash</tt> commands come from and where <a>Message</a>s go.
 data Channel
-Channel :: ChannelID -> Text -> Channel
+Channel :: !ChannelID -> !Text -> Channel
 
 -- | A username: no at-signs, just text!
 newtype User
@@ -156,34 +178,34 @@ User :: Text -> User
 --   <a>Format</a>.</li>
 --   </ul>
 data Message
-SimpleMessage :: Icon -> Text -> Channel -> Text -> Message
-FormattedMessage :: Icon -> Text -> Channel -> [Format] -> Message
+SimpleMessage :: !Icon -> !Text -> !Channel -> !Text -> Message
+FormattedMessage :: !Icon -> !Text -> !Channel -> ![Format] -> Message
 
 -- | Like a curiosity about the world, you'll need one of these to
 --   <tt>say</tt> something.
 data Config
-Config :: Text -> Config
+Config :: !Text -> Config
 
 -- | This is the incoming web hook URL that Slack gave you. It's usually
 --   <tt><a>https://hooks.slack.com/services/..</a>.</tt>.
-[_configHookURL] :: Config -> Text
+[_configHookURL] :: Config -> !Text
 
 -- | Incoming HTTP requests to the slash function get parsed into one of
 --   these babies.
 data Command
-Command :: Text -> User -> Channel -> Maybe Text -> Command
+Command :: !Text -> !User -> !Channel -> !(Maybe Text) -> Command
 
 -- | The command name.
-[_commandName] :: Command -> Text
+[_commandName] :: Command -> !Text
 
 -- | Who ran your slash command.
-[_commandUser] :: Command -> User
+[_commandUser] :: Command -> !User
 
 -- | Where the person ran your slash command.
-[_commandChannel] :: Command -> Channel
+[_commandChannel] :: Command -> !Channel
 
 -- | Text for the slash command, if any.
-[_commandText] :: Command -> Maybe Text
+[_commandText] :: Command -> !(Maybe Text)
 
 -- | The icon next to the messages you <tt>say</tt>. (Images unsupported
 --   right now, sorry.)
@@ -198,19 +220,45 @@ data Format
 -- | <pre>
 --   "&lt;@user|user&gt;"
 --   </pre>
-FormatAt :: User -> Format
+FormatAt :: !User -> Format
 
 -- | <pre>
 --   "&lt;@user|user did this and that&gt;"
 --   </pre>
-FormatUser :: User -> Text -> Format
+FormatUser :: !User -> !Text -> Format
 
 -- | <pre>
 --   "&lt;http://example.com|user did this and that&gt;"
 --   </pre>
-FormatLink :: Text -> Text -> Format
+FormatLink :: !Text -> !Text -> Format
 
 -- | <pre>
 --   "user did this &amp;amp; that"
 --   </pre>
-FormatString :: Text -> Format
+FormatString :: !Text -> Format
+
+-- | I POST a <a>Message</a> to Slack and return the HTTP response.
+--   However, I need a <a>Config</a> (containing an incoming hook
+--   configured through Slack administration) first.
+--   
+--   Guaranted to not throw an unchecked exception.
+say :: (MonadError RequestError m, MonadIO m) => Message -> Config -> m ()
+
+-- | I GET a WebSocket <tt>URI</tt> from Slack's real-time messaging
+--   endpoint. However, I need an <a>APIToken</a> (configured through Slack
+--   administration) first.
+--   
+--   Guaranted to not throw an unchecked exception.
+startRTM :: (MonadError RequestError m, MonadIO m) => APIToken -> m URI
+startRTMWithOptions :: (MonadError RequestError m, MonadIO m) => Options -> m URI
+
+-- | A bot server! As if by magic. This acts like a <a>WAI</a> middleware:
+--   Linklater wraps around your application. (Really, it just gives you a
+--   <a>Command</a> to work with instead of a raw HTTP request.)
+slash :: (Command -> Application) -> Application
+
+-- | A bot server for people who are in a hurry. Make a function that takes
+--   a <a>Command</a> and returns some <a>Text</a> in <a>IO</a> world, and
+--   we'll convert it into a <a>WAI</a> application. If you want more
+--   control over the request and respond, see <a>slash</a>.
+slashSimple :: (Command -> IO Text) -> Application
