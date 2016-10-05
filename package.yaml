@@ -18,17 +18,28 @@ category:
   Network
 description: |
   <https://github.com/hlian/linklater/blob/master/README.md ~please see our lovely README.md~>
+default-extensions:
+  - FlexibleContexts
+  - LambdaCase
+  - OverloadedLists
+  - OverloadedStrings
+  - ScopedTypeVariables
 dependencies:
   - aeson
   - base
   - base-prelude
   - bytestring
   - containers
+  - exceptions
   - http-types
   - lens
+  - lens-aeson
+  - mtl
+  - safe-exceptions
   - tasty
   - tasty-hunit
   - text
+  - uri-bytestring
   - wai
   - wreq
 library:
