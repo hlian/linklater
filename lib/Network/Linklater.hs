@@ -22,6 +22,7 @@
 
 module Network.Linklater
        (
+         module Network.Linklater.Types,
          -- * Types
          Channel(..),
          User(..),

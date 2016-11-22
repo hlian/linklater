@@ -1,6 +1,11 @@
 flags: {}
 packages:
   - '.'
+  - 'examples'
+  - location:
+      git: git@github.com:hlian/jpg-cli
+      commit: bbf4
+    extra-dep: true
 resolver:
   lts-7.10
 ghc-options:

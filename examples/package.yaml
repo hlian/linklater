@@ -8,26 +8,34 @@ version:
 category:
   Web
 dependencies:
-  HTTP
-  , aeson
-  , base < 5
-  , base-prelude
-  , bytestring
-  , jpg-to
-  , lens
-  , lens-aeson
-  , linklater
-  , mtl
-  , network
-  , pcre-heavy
-  , random-shuffle
-  , text
-  , th-printf
-  , uri-bytestring
-  , warp
-  , websockets
-  , wreq
-  , wuss
+  - HTTP
+  - aeson
+  - base < 5
+  - base-prelude
+  - bytestring
+  - jpg-to
+  - lens
+  - lens-aeson
+  - linklater
+  - mtl
+  - network
+  - pcre-heavy
+  - random-shuffle
+  - safe-exceptions
+  - stm-chans
+  - text
+  - th-printf
+  - uri-bytestring
+  - warp
+  - websockets
+  - wreq
+  - wuss
+default-extensions:
+  - FlexibleContexts
+  - LambdaCase
+  - OverloadedLists
+  - OverloadedStrings
+  - ScopedTypeVariables
 executables:
   streambot:
     main: Main.hs

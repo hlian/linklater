@@ -1,4 +1,4 @@
--- This file has been generated from package.yaml by hpack version 0.9.0.
+-- This file has been generated from package.yaml by hpack version 0.14.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -12,11 +12,32 @@ executable streambot
   main-is: Main.hs
   hs-source-dirs:
       app
+  default-extensions: FlexibleContexts LambdaCase OverloadedLists OverloadedStrings ScopedTypeVariables
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      HTTP , aeson , base < 5 , base-prelude , bytestring , jpg-to , lens , lens-aeson , linklater , mtl , network , pcre-heavy , random-shuffle , text , th-printf , uri-bytestring , warp , websockets , wreq , wuss
-  other-modules:
       HTTP
+    , aeson
+    , base < 5
+    , base-prelude
+    , bytestring
+    , jpg-to
+    , lens
+    , lens-aeson
+    , linklater
+    , mtl
+    , network
+    , pcre-heavy
+    , random-shuffle
+    , safe-exceptions
+    , stm-chans
+    , text
+    , th-printf
+    , uri-bytestring
+    , warp
+    , websockets
+    , wreq
+    , wuss
+  other-modules:
       JointPhotographicExpertsGroupTonga
       Toys.Hi5
       Toys.SummonPainting
