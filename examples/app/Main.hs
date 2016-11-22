@@ -30,8 +30,8 @@ stage0 = do
 
 stage1 :: URI -> Chan Speech -> IO (Chan Bytes)
 stage1 uri outbox =
-  case (uri ^? uriAuthorityL . _Just . authorityHostL . hostBSL . utf8 . unpacked,
-        uri ^? uriPathL . utf8 . unpacked) of
+  case (uri ^? authorityL . _Just . authorityHostL . hostBSL . utf8 . unpacked,
+        uri ^? pathL . utf8 . unpacked) of
     (Just host, Just path) -> do
       chan <- newChan
       Sock.runSecureClient host 443 path (consumer chan)

@@ -7,6 +7,6 @@ packages:
     commit: bbf4
   extra-dep: true
 extra-deps:
-- wuss-1.0.2
+- wuss-1.1.1
 - th-printf-0.3.1
-resolver: lts-6.17
+resolver: lts-7.10
