@@ -122,7 +122,7 @@ startRTMWithOptions opts = do
 -- seems reckless
 _reasonableOptions :: Options
 _reasonableOptions =
-  defaults & checkStatus ?~ (\_ _ _ -> Nothing)
+  defaults & checkResponse .~ Nothing
 
 _paramsIO :: Request -> IO (Map Text Text)
 _paramsIO req = do
