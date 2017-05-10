@@ -141,8 +141,8 @@ instance GHC.Classes.Eq Network.Linklater.Types.User
 instance GHC.Show.Show Network.Linklater.Types.Channel
 instance GHC.Classes.Ord Network.Linklater.Types.Channel
 instance GHC.Classes.Eq Network.Linklater.Types.Channel
-instance Data.Aeson.Types.Class.ToJSON Network.Linklater.Types.Channel
-instance Data.Aeson.Types.Class.ToJSON Network.Linklater.Types.Message
+instance Data.Aeson.Types.ToJSON.ToJSON Network.Linklater.Types.Channel
+instance Data.Aeson.Types.ToJSON.ToJSON Network.Linklater.Types.Message
 
 module Network.Linklater.Batteries
 
