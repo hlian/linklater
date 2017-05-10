@@ -1,8 +1,10 @@
 name:
   linklater
 version:
-  4.0.0.0
+  4.0.0.2
 author:
+  Hao Lian <hi@haolian.org>
+maintainer:
   Hao Lian <hi@haolian.org>
 synopsis:
   A Haskell library for the Slack API
@@ -26,7 +28,7 @@ default-extensions:
   - ScopedTypeVariables
 dependencies:
   - aeson
-  - base
+  - base >= 4.9.1.0 && < 5
   - base-prelude
   - bytestring
   - containers
@@ -36,8 +38,6 @@ dependencies:
   - lens-aeson
   - mtl
   - safe-exceptions
-  - tasty
-  - tasty-hunit
   - text
   - uri-bytestring
   - wai
@@ -48,4 +48,7 @@ tests:
   linklater-tests:
     main: Main.hs
     source-dirs: test/
-    dependencies: linklater
+    dependencies:
+      - linklater
+      - tasty
+      - tasty-hunit
