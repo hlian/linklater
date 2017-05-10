@@ -12,6 +12,7 @@ time messaging (read: web sockets).
 
 <a href="https://circleci.com/gh/hlian/linklater">CircleCI status: <img src="https://circleci.com/gh/hlian/linklater.svg?style=svg" alt="CircleCI status"></a>
 
+
 <b>I just want the library</b>
 
 It is on Hackage but not on Stackage.
