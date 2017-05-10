@@ -10,20 +10,7 @@ A Haskell library for the Slack API.
 It even comes with support for real-
 time messaging (read: web sockets).
 
-<b>Development (OS X)</b>
-
 <a href="https://circleci.com/gh/hlian/linklater">CircleCI status: <img src="https://circleci.com/gh/hlian/linklater.svg?style=svg" alt="CircleCI status"></a>
- 
-<a href="https://github.com/commercialhaskell/stack/releases">Install stack into ~/.local/bin/.</a>
-
-• export PATH=~/.local/bin:$PATH
-• stack setup
-• stack build --fast --test
-
-Right now Stack is a hard requirement
-because I hate versioning my
-dependencies. Pull requests welcome!
-
 
 <b>I just want the library</b>
 
@@ -33,6 +20,10 @@ to "extra-deps".
 
 
 <b>I just want documentation</b>
+
+• <a href="https://github.com/hlian/linklater/wiki/Tutorial">A rather unhelpful tutorial</a>
+  In which we build a real-time
+  jazz-hands robot
 
 • <a href="http://hlian.github.io/linklater/hackage/">GitHub Pages</a>
   The master branch (development),
