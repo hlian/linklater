@@ -2,16 +2,18 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 module Toys.Hi5 where
 
+import Data.Text ()
+import Text.Printf (printf)
+
 import BasePrelude hiding ((&), putStrLn, lazy)
 import Control.Lens hiding ((.=), re)
-import Data.Aeson
 import Data.Aeson.Types
-import Text.Printf.TH
+import Data.Text.Strict.Lens
 import Text.Regex.PCRE.Heavy
 
 import Types
@@ -19,8 +21,13 @@ import Utils
 
 data Target = TargetOne { _victim :: !Text } | TargetAny deriving (Eq, Ord, Show)
 data Want = Want { _target :: !Target, _line :: !Line } deriving (Eq, Ord, Show)
-data Machine = Machine { _lines :: ![Want] } deriving (Show)
-makeLenses ''Want
+newtype Machine = Machine { _lines :: [Want] } deriving (Show)
+
+target :: Lens' Want Target
+target = lens _target (\Want{..} new -> Want new _line)
+
+line :: Lens' Want Line
+line = lens _line (\Want{..} new -> Want _target new)
 
 instance FromJSON Want where
   parseJSON whole@(Object o) = do
@@ -79,10 +86,10 @@ alert :: Want -> Want -> MVar Int -> IO Text
 alert w0 w1 nonsenseIndexM =
   if u0 == u1 then do
     idx <- modifyMVar nonsenseIndexM (\idx -> return (idx + 1, idx `mod` length sadness))
-    return $ [st|<@%s> high-fives <@%s>! %s.|] u0 u1 (sadness !! idx)
+    return . view packed $ printf "<@%s> high-fives <@%s>! %s." u0 u1 (sadness !! idx)
   else do
     idx <- modifyMVar nonsenseIndexM (\idx -> return (idx + 1, idx `mod` length nonsense))
-    return $ [st|<@%s> and <@%s> high five! Their high-five %s.|] u0 u1 (nonsense !! idx)
+    return . view packed $ printf "<@%s> and <@%s> high five! Their high-five %s." u0 u1 (nonsense !! idx)
   where
     u0 = w0 ^. line . user
     u1 = w1 ^. line . user

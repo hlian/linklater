@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Toys.SummonPainting (summon) where
 
@@ -11,18 +11,23 @@ import           BasePrelude hiding ((&), putStrLn, lazy, words, intercalate)
 import           Control.Lens hiding ((.=), re)
 import           Data.Text (strip)
 import qualified Network.Images.Search as Search
+import           Text.Printf (printf)
 
 import           Control.Monad.Except
 import           Data.Aeson.Types
 import           Data.Text.Strict.Lens
-import           Text.Printf.TH
 import           Text.Regex.PCRE.Heavy
 
 import           Types
 import           Utils
 
 data Want = Want { _query :: !Text, _line :: !Line } deriving (Eq, Ord, Show)
-makeLenses ''Want
+
+line :: Lens' Want Line
+line = lens _line (\Want{..} new -> Want _query new)
+
+query :: Lens' Want Text
+query = lens _query (\Want{..} new -> Want new _line)
 
 parseTarget' :: Text -> [(Text, [Text])]
 parseTarget' = scan [re|summon\s+painting\s+of\s+(.*)!|]
@@ -60,7 +65,7 @@ google want = do
 
 alert :: Want -> Text -> Text
 alert want =
-  [st|<@%s> has summoned %s|] (want ^. line . user)
+  view packed . printf "<@%s> has summoned %s" (want ^. line . user)
 
 naughty :: Text
 naughty =

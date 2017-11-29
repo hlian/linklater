@@ -4,9 +4,8 @@ packages:
 - '..'
 - location:
     git: git@github.com:hlian/jpg-cli
-    commit: bbf4
+    commit: master
   extra-dep: true
 extra-deps:
-- wuss-1.1.1
-- th-printf-0.3.1
-resolver: lts-7.10
+- wuss-1.1.5
+resolver: lts-9.14

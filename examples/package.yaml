@@ -22,7 +22,6 @@ dependencies:
   , pcre-heavy
   , random-shuffle
   , text
-  , th-printf
   , uri-bytestring
   , warp
   , websockets
