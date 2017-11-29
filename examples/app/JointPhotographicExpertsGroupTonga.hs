@@ -25,11 +25,11 @@ cleverlyReadFile filename =
 
 configIO :: IO Config
 configIO =
-  Config <$> (cleverlyReadFile "hook")
+  Config <$> cleverlyReadFile "hook"
 
 googleConfigIO :: IO Search.Gapi
 googleConfigIO =
-  Search.config <$> (cleverlyReadFile "google-server-key") <*> (cleverlyReadFile "google-search-engine-id")
+  Search.config <$> cleverlyReadFile "google-server-key" <*> cleverlyReadFile "google-search-engine-id"
 
 parseQuery :: Text -> JPEGMonad Text
 parseQuery query = case strip query of
@@ -43,7 +43,7 @@ messageOfCommand (Command "jpeg" user_ channel_ (Just query)) = do
   case maybeURL of
     Nothing ->
       throwError "no images found"
-    Just url -> do
+    Just url ->
       return (messageOf [FormatAt user_, FormatLink url url])
   where
     messageOf =
@@ -58,16 +58,21 @@ jpgto command = do
   message <- runExceptT (messageOfCommand command)
   case (debug, message) of
     (False, Right m) -> do
-      putStrLn ("+ Outgoing messsage: " <> show (encode m))
-      void (say m config)
+      putStrLn ("+ Outgoing message: " <> show (encode m))
+      anEither <- runExceptT (say m config)
+      case anEither of
+        Left requestError ->
+          putStrLn ("! Request error: " <> show requestError)
+        Right () ->
+          return ()
       return ""
     (False, Left errorMessage) ->
       return ("jpegbot encountered an error, is on fire now: " <> (errorMessage ^. packed))
     (True, Right m) -> do
-      putStrLn ("+ Outgoing messsage: " <> show (encode m))
+      putStrLn ("+ Outgoing message: " <> show (encode m))
       return ""
     (True, Left errorMessage) -> do
-      putStrLn ("+ Outgoing ERROR: " <> errorMessage)
+      putStrLn ("! Outgoing ERROR: " <> errorMessage)
       return ""
   where
     debug = False
