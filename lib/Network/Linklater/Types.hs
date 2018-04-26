@@ -14,6 +14,7 @@ import           BasePrelude
 import           Control.Lens hiding ((.=))
 import           Control.Monad.Except
 import           Data.Aeson
+import           Data.Aeson.Lens
 
 -- | The unique 'C<number>' Slack assigns to each channel. Used to
 -- 'say' things.
@@ -36,6 +37,22 @@ data Command = Command {
   _commandChannel :: !Channel,
   -- | Text for the slash command, if any.
   _commandText :: !(Maybe Text)
+  } deriving (Eq, Ord, Show)
+
+-- | The full url that triggered the "link_shared" event in Slack  
+type Link = Text
+
+-- | A Slack event type defined in https://api.slack.com/events
+-- | Currently only have link_shared implemented!
+data EventType = LinkShared [Link] | UnknownEvent deriving (Eq, Ord, Show)
+
+data Event = Event {
+  -- | The type of event
+  _eventType :: !EventType,
+  -- | The user who triggered the event
+  _eventUser :: !User,
+  -- | The channel the event was triggered from
+  _eventChannel :: !ChannelID
   } deriving (Eq, Ord, Show)
 
 -- | The icon next to the messages you `say`. (Images unsupported
@@ -119,6 +136,22 @@ commandOfParams params = do
     userOf = User . Text.filter (/= '@')
     nameOf = Text.filter (/= '/')
     paramOf key = case params ^. at key of
+      Just value -> Right value
+      Nothing -> Left ("paramOf: no key: " <> show key)
+
+eventOfBody :: Data.Aeson.Object -> Either String Event
+eventOfBody obj = do
+  user <- User <$> valueOf "user"
+  channel <- valueOf "channel"
+  eventType <- valueOf "type"
+  case eventType of
+    "link_shared" -> do
+      let links = LinkShared $ obj ^.. ix "links" . values . _Object . ix "url" . _String 
+      Event <$> pure links <*> pure user <*> pure channel
+    _ -> 
+      Event <$> pure UnknownEvent <*> pure user <*> pure channel
+  where
+    valueOf key = case obj ^? ix key . _String of
       Just value -> Right value
       Nothing -> Left ("paramOf: no key: " <> show key)
 
