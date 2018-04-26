@@ -1,5 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- |
 -- Module: Network.Linklater
@@ -28,6 +29,7 @@ module Network.Linklater
          Message(..),
          Config(..),
          Command(..),
+         Event(..),
          Icon(..),
          Format(..),
          -- * API calls
@@ -37,6 +39,7 @@ module Network.Linklater
          -- * HTTP bot servers
          slash,
          slashSimple,
+         eventTrigger
        ) where
 
 import qualified Data.Aeson as Aeson
@@ -47,6 +50,7 @@ import qualified URI.ByteString as URI
 
 import           Control.Lens
 import           Control.Monad.Except
+import           Data.ByteString.Lazy.Internal (ByteString)
 import           Data.Aeson.Lens
 import           Data.Text.Strict.Lens
 import           Network.Linklater.Batteries
@@ -83,6 +87,16 @@ slash inner req respond = do
     Left msg ->
       respond (responseOf status400 ("linklater: unable to parse request: " <> msg ^. packed))
 
+eventTrigger :: (Event -> Application) -> Application
+eventTrigger inner req respond = do
+  body <- strictRequestBody req
+  case body ^? key "challenge" . _String of
+    Just challenge -> respond $ responseOf status200 challenge
+    Nothing ->
+      case _eitherEvent body of
+        Right event -> inner event req respond
+        Left msg ->
+          respond (responseOf status400 ("linklater: unable to parse request: " <> msg ^. packed))
 ----------------------------------------
 -- ~ API calls ~
 
@@ -123,6 +137,11 @@ startRTMWithOptions opts = do
 _reasonableOptions :: Options
 _reasonableOptions =
   defaults & checkResponse .~ Nothing
+
+_eitherEvent :: ByteString -> Either String Event
+_eitherEvent body = do
+  bodyObj <- Aeson.eitherDecode body :: Either String Aeson.Object
+  eventOfBody $ bodyObj ^. ix "event" . _Object 
 
 _paramsIO :: Request -> IO (Map Text Text)
 _paramsIO req = do
