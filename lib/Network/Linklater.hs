@@ -39,7 +39,7 @@ module Network.Linklater
          -- * HTTP bot servers
          slash,
          slashSimple,
-         trigger
+         eventTrigger
        ) where
 
 import qualified Data.Aeson as Aeson
@@ -87,7 +87,7 @@ slash inner req respond = do
     Left msg ->
       respond (responseOf status400 ("linklater: unable to parse request: " <> msg ^. packed))
 
-trigger :: (Event -> Application) -> Application
+eventTrigger :: (Event -> Application) -> Application
 eventTrigger inner req respond = do
   body <- strictRequestBody req
   case body ^? key "challenge" . _String of
