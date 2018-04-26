@@ -147,9 +147,9 @@ eventOfBody obj = do
   case eventType of
     "link_shared" -> do
       let links = LinkShared $ obj ^.. ix "links" . values . _Object . ix "url" . _String 
-      Event <$> pure links <*> pure user <*> pure channel
+      return $ Event links user channel
     _ -> 
-      Event <$> pure UnknownEvent <*> pure user <*> pure channel
+      return $ Event UnknownEvent user channel
   where
     valueOf key = case obj ^? ix key . _String of
       Just value -> Right value
