@@ -210,6 +210,7 @@ instance ToJSON Message where
                , "username" .= username
                , "text" .= raw
                , "unfurl_links" .= True
+               , "link_names" .= True
                , "attachments" .= as
                ]
       handleRS :: ResponseType -> Text
