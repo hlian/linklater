@@ -194,7 +194,7 @@ instance ToJSON Message where
       toJSON_ (EmojiIcon emoji) username channel raw toParse =
         object [ "channel" .= channel
                , "icon_emoji" .= (":" <> emoji <> ":")
-               , "parse" .= String (if toParse then "full" else "poop")
+               , "parse" .= String (if toParse then "full" else "none")
                , "username" .= username
                , "text" .= raw
                , "unfurl_links" .= True
