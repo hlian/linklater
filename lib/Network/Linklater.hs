@@ -44,12 +44,14 @@ module Network.Linklater
 
 import qualified Data.Aeson as Aeson
 import           Network.HTTP.Types (status200, status400, parseSimpleQuery, ResponseHeaders)
-import           Network.Wai (responseLBS, strictRequestBody, Application, Request)
+import           Network.Wai (responseLBS, strictRequestBody, Application)
 import qualified Network.Wai as Wai
 import qualified URI.ByteString as URI
 
 import           Control.Lens
 import           Control.Monad.Except
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BSL
 import           Data.ByteString.Lazy.Internal (ByteString)
 import           Data.Aeson.Lens
 import           Data.Text.Strict.Lens
@@ -80,8 +82,9 @@ slashSimple f =
 -- request.)
 slash :: (Command -> Application) -> Application
 slash inner req respond = do
-  params <- _paramsIO req
-  case commandOfParams params of
+  fullBody <- BSL.toStrict <$> strictRequestBody req
+  let params = _params fullBody
+  case commandOfParams fullBody params of
     Right command ->
       inner command req respond
     Left msg ->
@@ -143,11 +146,11 @@ _eitherEvent body = do
   bodyObj <- Aeson.eitherDecode body :: Either String Aeson.Object
   eventOfBody $ bodyObj ^. ix "event" . _Object 
 
-_paramsIO :: Request -> IO (Map Text Text)
-_paramsIO req = do
-  lazyBytes <- strictRequestBody req
-  let query = lazyBytes ^.. (strict . to parseSimpleQuery . traverse . to (both %~ view utf8))
-  return (fromList query)
+_params :: BS.ByteString -> Map Text Text
+_params body =
+  let
+    query = body ^.. (to parseSimpleQuery . traverse . to (both %~ view utf8))
+  in fromList query
 
 _u :: String -> String
 _u = ("https://slack.com" ++)

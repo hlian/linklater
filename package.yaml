@@ -33,6 +33,7 @@ dependencies:
   - bytestring
   - containers
   - exceptions
+  - HTTP
   - http-types
   - lens
   - lens-aeson
@@ -49,6 +50,8 @@ tests:
     main: Main.hs
     source-dirs: test/
     dependencies:
+      - HTTP
       - linklater
       - tasty
       - tasty-hunit
+      - text
