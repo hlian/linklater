@@ -82,9 +82,14 @@ data Format =
 --
 --   * Complex messages are parsed according to Slack formatting. See 'Format'.
 --
+data ResponseType = InChannel | Ephemeral
+
+data Attachment = TextAttachment !Text
+                | ImageURLAttachment !Text
+
 data Message =
     SimpleMessage !Icon !Text !Channel !Text
-  | FormattedMessage !Icon !Text !Channel ![Format]
+  | FormattedMessage !Icon !Text !Channel !ResponseType ![Format] ![Attachment]
 
 -- | Like a curiosity about the world, you'll need one of these to
 -- 'say' something.
@@ -187,18 +192,26 @@ asList = id
 instance ToJSON Channel where
   toJSON (Channel cid _) = toJSON cid
 
+instance ToJSON Attachment where
+  toJSON (TextAttachment t) = object ["text" .= t]
+  toJSON (ImageURLAttachment t) = object ["image_url" .= t]
+
 instance ToJSON Message where
   toJSON m = case m of
-    (FormattedMessage emoji username channel formats) ->
-      toJSON_ emoji username channel (Text.unwords (unformat <$> formats)) False
+    (FormattedMessage emoji username channel rs formats attachs) ->
+      toJSON_ emoji username channel (handleRS rs) (Text.unwords (unformat <$> formats)) False attachs
     (SimpleMessage emoji username channel text) ->
-      toJSON_ emoji username channel text True
+      toJSON_ emoji username channel (handleRS Ephemeral) text True ([] :: [Attachment])
     where
-      toJSON_ (EmojiIcon emoji) username channel raw toParse =
-        object [ "channel" .= channel
+      toJSON_ (EmojiIcon emoji) username channel rs raw toParse as =
+        object [ "channel" .= channel, "response_type" .= rs 
                , "icon_emoji" .= (":" <> emoji <> ":")
                , "parse" .= String (if toParse then "full" else "none")
                , "username" .= username
                , "text" .= raw
                , "unfurl_links" .= True
+               , "attachments" .= as
                ]
+      handleRS :: ResponseType -> Text
+      handleRS Ephemeral = "ephemeral"
+      handleRS _ = "in_channel"
