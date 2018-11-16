@@ -14,7 +14,7 @@ import           BasePrelude
 import           Control.Lens hiding ((.=))
 import           Control.Monad.Except
 import           Data.Aeson
-import           Data.Aeson.Lens
+import           Data.Aeson.Lens hiding (key)
 
 -- | The unique 'C<number>' Slack assigns to each channel. Used to
 -- 'say' things.
@@ -36,7 +36,9 @@ data Command = Command {
   -- | Where the person ran your slash command.
   _commandChannel :: !Channel,
   -- | Text for the slash command, if any.
-  _commandText :: !(Maybe Text)
+  _commandText :: !(Maybe Text),
+  -- | Response URL to return a delayed response.
+  _commandResponseURL :: !Text
   } deriving (Eq, Ord, Show)
 
 -- | The full url that triggered the "link_shared" event in Slack  
@@ -132,6 +134,7 @@ commandOfParams params = do
           <*> pure user
           <*> pure channel
           <*> pure (either (const Nothing) Just (paramOf "text"))
+          <*> paramOf "response_url"
   where
     userOf = User . Text.filter (/= '@')
     nameOf = Text.filter (/= '/')

@@ -2,6 +2,6 @@ flags: {}
 packages:
   - '.'
 resolver:
-  lts-8.13
+  lts-12.18
 ghc-options:
   linklater: -Wall -Werror
