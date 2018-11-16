@@ -4,10 +4,12 @@
 module Network.Linklater.Types where
 
 import qualified Control.Exception.Safe as Ex
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LazyBytes
 import qualified Data.Map as Map
 import           Data.Text (Text)
 import qualified Data.Text as Text
+import           Network.HTTP.Base (urlDecode)
 import qualified Network.Wreq as Wreq
 
 import           BasePrelude
@@ -36,7 +38,11 @@ data Command = Command {
   -- | Where the person ran your slash command.
   _commandChannel :: !Channel,
   -- | Text for the slash command, if any.
-  _commandText :: !(Maybe Text)
+  _commandText :: !(Maybe Text),
+  -- | The response url
+  _commandResponseURL :: !Text,
+  -- | The original Text for the body, in case someone wants to verify the signature
+  _commandOriginalBody :: !BS.ByteString
   } deriving (Eq, Ord, Show)
 
 -- | The full url that triggered the "link_shared" event in Slack  
@@ -124,20 +130,23 @@ unformat (FormatUser (User u) t) = "<@" <> u <> "|" <> t <> ">"
 unformat (FormatLink url t) = "<" <> url <> "|" <> t <> ">"
 unformat (FormatString t) = foldr (uncurry Text.replace) t (asList [("<", "&lt;"), (">", "&gt;"), ("&", "&amp;")])
 
-commandOfParams :: Map.Map Text Text -> Either String Command
-commandOfParams params = do
+commandOfParams :: BS.ByteString -> Map.Map Text Text -> Either String Command
+commandOfParams fullBody params = do
   user <- userOf <$> paramOf "user_name"
   channel <- Channel <$> paramOf "channel_id" <*> paramOf "channel_name"
   Command <$> (nameOf <$> paramOf "command")
           <*> pure user
           <*> pure channel
           <*> pure (either (const Nothing) Just (paramOf "text"))
+          <*> (Text.pack . urlDecode . Text.unpack <$> paramOf "response_url")
+          <*> pure fullBody
+
   where
     userOf = User . Text.filter (/= '@')
     nameOf = Text.filter (/= '/')
-    paramOf key = case params ^. at key of
+    paramOf key' = case params ^. at key' of
       Just value -> Right value
-      Nothing -> Left ("paramOf: no key: " <> show key)
+      Nothing -> Left ("paramOf: no key: " <> show key')
 
 eventOfBody :: Data.Aeson.Object -> Either String Event
 eventOfBody obj = do
@@ -151,9 +160,9 @@ eventOfBody obj = do
     _ -> 
       return $ Event UnknownEvent user channel
   where
-    valueOf key = case obj ^? ix key . _String of
+    valueOf key' = case obj ^? ix key' . _String of
       Just value -> Right value
-      Nothing -> Left ("paramOf: no key: " <> show key)
+      Nothing -> Left ("paramOf: no key: " <> show key')
 
 tryRequest :: (MonadIO m, MonadError RequestError m) => IO Response -> m Response
 tryRequest io = do
