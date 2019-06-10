@@ -18,15 +18,19 @@ import           Control.Monad.Except
 import           Data.Aeson
 import           Data.Aeson.Lens
 
--- | The unique 'C<number>' Slack assigns to each channel. Used to
+-- | The unique '{C,G,D}<number>' Slack assigns to each channel. Used to
 -- 'say' things.
 type ChannelID = Text
 
 -- | Where 'slash' commands come from and where 'Message's go.
 data Channel = Channel !ChannelID !Text deriving (Eq, Ord, Show)
 
--- | A username: no at-signs, just text!
-newtype User = User Text deriving (Eq, Ord, Show)
+-- | The unique 'U<identifier>' Slack assigns to each user. Used to
+-- identify users.
+type UserID = Text
+
+-- | A Slack user's ID and name.
+data User = User !UserID !Text deriving (Eq, Ord, Show)
 
 -- | Incoming HTTP requests to the slash function get parsed into one
 -- of these babies.
@@ -125,14 +129,14 @@ data RequestError =
                } deriving Show
 
 unformat :: Format -> Text
-unformat (FormatAt user@(User u)) = unformat (FormatUser user u)
-unformat (FormatUser (User u) t) = "<@" <> u <> "|" <> t <> ">"
+unformat (FormatAt user@(User _ u)) = unformat (FormatUser user u)
+unformat (FormatUser (User i _) t) = "<@" <> i <> "|" <> t <> ">"
 unformat (FormatLink url t) = "<" <> url <> "|" <> t <> ">"
 unformat (FormatString t) = foldr (uncurry Text.replace) t (asList [("<", "&lt;"), (">", "&gt;"), ("&", "&amp;")])
 
 commandOfParams :: BS.ByteString -> Map.Map Text Text -> Either String Command
 commandOfParams fullBody params = do
-  user <- userOf <$> paramOf "user_name"
+  user <- userOf <$> paramOf "user_id" <*> paramOf "user_name"
   channel <- Channel <$> paramOf "channel_id" <*> paramOf "channel_name"
   Command <$> (nameOf <$> paramOf "command")
           <*> pure user
@@ -150,7 +154,7 @@ commandOfParams fullBody params = do
 
 eventOfBody :: Data.Aeson.Object -> Either String Event
 eventOfBody obj = do
-  user <- User <$> valueOf "user"
+  user <- User <$> valueOf "user" <*> Right ""
   channel <- valueOf "channel"
   eventType <- valueOf "type"
   case eventType of
