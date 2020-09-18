@@ -2,7 +2,7 @@
 
 module Network.Linklater.Batteries (module X) where
 
-import BasePrelude as X hiding ((&), lazy)
+import BasePrelude as X hiding ((&), lazy, utf8)
 import Control.Monad.Catch as X
   (MonadThrow(..))
 import Control.Monad.Reader as X
